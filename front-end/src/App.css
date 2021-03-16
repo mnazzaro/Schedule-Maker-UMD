@@ -10,6 +10,10 @@ table {
 }
 
 th, td {
-  padding: 15px;
+  padding: 10px;
+}
+
+input {
+  border: 0;
 }
 

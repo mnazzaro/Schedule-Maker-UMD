@@ -1,7 +1,16 @@
-import logo from './logo.svg';
 import './App.css';
+import TableItem from './TableItem.js';
 
 function App() {
+  var table = []
+  var tr = []
+  for (let i = 0; i < 10; i++) {
+    tr = []
+    for (let j = 0; j < 8; j++) {
+      tr.push(<TableItem/>)
+    }
+    table.push(<tr>{tr}</tr>)
+  }
   return (
     <table>
       <tr>
@@ -14,16 +23,7 @@ function App() {
         <th>Fall Semester 4</th>
         <th>Spring Semester 4</th>
       </tr>
-      <tr>
-        <td><div width="10px" height="10px" style={{borderRadius: "10px", borderColor: "red"}}/></td>
-        <td>Something</td>
-        <td>Something</td>
-        <td>Something</td>
-        <td>Something</td>
-        <td>Something</td>
-        <td>Something</td>
-        <td>Something</td>
-      </tr>
+      {table}
     </table>
   );
 }
