@@ -1,8 +1,12 @@
+import requests
+import json
+
 def is_stat_4XX(stat_course):
     if("STAT4" in stat_course):
         return True
     else:
         return False
+
 
 def get_course_range(course):
     for char in course:
@@ -10,6 +14,7 @@ def get_course_range(course):
             return int(char) * 100
     
     return -1
+
 
 def get_dept(course):
     dept = ""
@@ -45,7 +50,9 @@ def lower_level_math(courses):
                     break
             
             for c in list(courses):
-                if(is_math_stat(c) and (courses.get(c) == 3 or courses.get(c) == 4)):
+                if(is_math_stat(c) and \
+                    (courses.get(c) == 3 or courses.get(c) == 4)):
+
                     # if(requires_140(c) == True):
                     courses.pop(c)
                     break
@@ -90,7 +97,9 @@ def meets_UL(courses, dept):
     UL_credits = 0
     for c in list(courses):
         course_range = get_course_range(c)
-        if(get_dept(c) == dept and (course_range >= 300 and course_range < 500)):
+        if(get_dept(c) == dept and \
+                (course_range >= 300 and course_range < 500)):
+            
             UL_credits += courses[c]
             print(UL_credits)
     
@@ -99,24 +108,32 @@ def meets_UL(courses, dept):
 
 def general_track(courses):
     systems = ["CMSC411", "CMSC412", "CMSC414", "CMSC416", "CMSC417"]
-    info_processing = ["CMSC420", "CMSC421", "CMSC422", "CMSC423", "CMSC424", "CMSC426", "CMSC427", "CMSC470"]
+    info_processing = ["CMSC420", "CMSC421", "CMSC422", \
+                       "CMSC423", "CMSC424", "CMSC426", "CMSC427", "CMSC470"]
     SE_PL = ["CMSC430", "CMSC433", "CMSC434", "CMSC435", "CMSC436"]
     theory = ["CMSC451", "CMSC452", "CMSC456", "CMSC457"]
     num_analysis = ["CMSC460", "CMSC466"]
-    
-    total_general_courses = systems + info_processing + SE_PL + theory + num_analysis
+    misc = ["CMSC320", "CMSC389N", "CMSC425", "CMSC454", "CMSC472"]
+    total_general_courses = systems + info_processing + \
+        SE_PL + theory + num_analysis
+
     index_list = [0, 0, 0, 0, 0]
     for c in list(courses):
         if(c in total_general_courses):
             if(c in systems):
+                courses.pop(c)
                 index_list[0] = index_list[0] + 1
             elif(c in info_processing):
+                courses.pop(c)
                 index_list[1] = index_list[1] + 1
             elif(c in SE_PL):
+                courses.pop(c)
                 index_list[2] = index_list[2] + 1
             elif(c in theory):
+                courses.pop(c)
                 index_list[3] = index_list[3] + 1
             if(c in num_analysis):
+                courses.pop(c)
                 index_list[4] = index_list[4] + 1
     
     if(sum(index_list) < 5):
@@ -130,16 +147,72 @@ def general_track(courses):
     if(zero_count > 2):
         return False
     
-    return True
+    misc_count = 0
+    for c in list(courses):
+        if(c in total_general_courses or c in misc):
+            misc_count += 1
+    
+    if(misc_count >= 2):
+        return True
+    
+    return False
+
+
+def fulfills_FS(courses):
+    fsaw, fspw, fsoc, fsma, fsar, fsar_ma = False, False, False, False, False, False
+
+    for c in list(courses):
+        response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
+        response = requests.get(response_str)
+        course_data = json.loads(response.text)[0]
+        try:
+            gen_ed = course_data["gen_ed"][0]
+            if(gen_ed == ["FSAW"]):
+                fsaw = True
+            elif(gen_ed == ["FSPW"]):
+                fspw = True
+            elif(gen_ed == ["FSOC"]):
+                fsoc = True
+            elif(gen_ed == ["FSAR","FSMA"]):
+                fsar_ma = True
+            elif(gen_ed == ["FSAR"]):
+                fsar = True
+            elif(gen_ed == ["FSMA"]):
+                fsma = True
+        except:
+            # This course doesn't fulfill a gen-ed
+            continue
+
+    if(fsaw and fspw and fsoc and fsar and fsma):
+        return True
+    elif(fsaw and fspw and fsoc and (fsar or fsma) and fsar_ma is True):
+        return True
+    else:
+        return False
+    
+# def gen_ed(courses):
+#     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
+#        (fulfills_iseries(courses) and fulfills_diversity(courses))):
+#         return True
 
 
 if __name__ == '__main__':
+
+    gen_eds_fs = {
+        "ENGL101": 3,
+        "ENGL393": 3,
+        "COMM107": 3,
+        "MATH140": 4,
+        "BIOM301": 3
+    }
     c_advanced = {
         "CMSC411": 3,
         "CMSC412": 3,
         "CMSC414": 3,
         "CMSC430": 3,
-        "CMSC466": 3
+        "CMSC466": 3, 
+        "CMSC454": 3, 
+        "CMSC425": 3    
     }
 
     c = {
@@ -159,4 +232,4 @@ if __name__ == '__main__':
         "ART405": 4,
     }
 
-    print(general_track(c_advanced))
+    print(fulfills_FS(gen_eds_fs))
