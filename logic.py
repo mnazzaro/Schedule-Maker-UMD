@@ -4,6 +4,12 @@ def is_stat_4XX(stat_course):
     else:
         return False
 
+def get_course_range(course):
+    for char in course:
+        if(char.isdigit()):
+            return int(char) * 100
+    
+    return -1
 
 def get_dept(course):
     dept = ""
@@ -68,8 +74,27 @@ def lower_level_cs(courses):
 
 
 def UL_concentration(courses):
+    disciplines = list(courses)
+    disciplines = list(map(get_dept, disciplines))
+    disciplines = set(disciplines)
+    disciplines.remove("CMSC")
+    print(disciplines)
+    for subj in disciplines:
+        if(meets_UL(courses, subj)):
+            return True
+    
+    return False
+
+
+def meets_UL(courses, dept):
+    UL_credits = 0
     for c in list(courses):
-        if(c != "CMSC" and
+        course_range = get_course_range(c)
+        if(get_dept(c) == dept and (course_range >= 300 and course_range < 500)):
+            UL_credits += courses[c]
+            print(UL_credits)
+    
+    return UL_credits >= 12
 
 if __name__ == '__main__':
     c = {
@@ -82,8 +107,11 @@ if __name__ == '__main__':
         "CMSC216": 4,
         "CMSC250": 4,
         "CMSC330": 3,
-        "CMSC351": 3
+        "CMSC351": 3,
+        "CMSC401": 3,
+        "CMSC402": 3,
+        "ART403": 3,
+        "ART405": 4
     }
 
-    print(lower_level_cs(c))
-
+    print(UL_concentration(c))
