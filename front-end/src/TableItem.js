@@ -8,19 +8,16 @@ class TableItem extends React.Component {
         this.textRef = React.createRef();
     }
 
-    componentDidMount = () => {
-        this.textRef.current.addEventListener("blur", this.dropdownOff)
-    }
-
     render () {
+        let courses = this.textRef.current ? this.textRef.current.value.length >= 3 ? this.props.findClasses(this.textRef.current) : null : null;
         return (
             <td>
                 <div className="dropdown">
-                    <input ref={this.textRef} onKeyUp={this.dropdownOn} height="100%"/>
-                    <div className={this.state.active ? "show dropdown-content" : "dropdown-content"}>
-                        <div className="dropdown-item" onMouseDown={this.setText}>Option 1</div>
-                        <div className="dropdown-item" onMouseDown={this.setText}>Option 2</div>
-                        <div className="dropdown-item" onMouseDown={this.setText}>Option 3</div>
+                    <input ref={this.textRef} onKeyUp={this.dropdownOn} onBlur={this.dropdownOff} height="100%"/>
+                    <div className={this.state.active && courses ? "show dropdown-content" : "dropdown-content"}>
+                        <div className="dropdown-item" onMouseDown={this.setText}>{courses ? courses[0]["course_id"] : ""}</div>
+                        <div className="dropdown-item" onMouseDown={this.setText}>{courses ? courses[1]["course_id"] : ""}</div>
+                        <div className="dropdown-item" onMouseDown={this.setText}>{courses ? courses[2]["course_id"] : ""}</div>
                     </div>
                 </div>
             </td>
