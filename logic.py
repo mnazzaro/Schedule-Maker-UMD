@@ -96,15 +96,52 @@ def meets_UL(courses, dept):
     
     return UL_credits >= 12
 
+
 def general_track(courses):
     systems = ["CMSC411", "CMSC412", "CMSC414", "CMSC416", "CMSC417"]
     info_processing = ["CMSC420", "CMSC421", "CMSC422", "CMSC423", "CMSC424", "CMSC426", "CMSC427", "CMSC470"]
     SE_PL = ["CMSC430", "CMSC433", "CMSC434", "CMSC435", "CMSC436"]
     theory = ["CMSC451", "CMSC452", "CMSC456", "CMSC457"]
     num_analysis = ["CMSC460", "CMSC466"]
-
     
+    total_general_courses = systems + info_processing + SE_PL + theory + num_analysis
+    index_list = [0, 0, 0, 0, 0]
+    for c in list(courses):
+        if(c in total_general_courses):
+            if(c in systems):
+                index_list[0] = index_list[0] + 1
+            elif(c in info_processing):
+                index_list[1] = index_list[1] + 1
+            elif(c in SE_PL):
+                index_list[2] = index_list[2] + 1
+            elif(c in theory):
+                index_list[3] = index_list[3] + 1
+            if(c in num_analysis):
+                index_list[4] = index_list[4] + 1
+    
+    if(sum(index_list) < 5):
+        return False
+    
+    zero_count = 0
+    for i in index_list:
+        if(i == 0):
+            zero_count += 1
+    
+    if(zero_count > 2):
+        return False
+    
+    return True
+
+
 if __name__ == '__main__':
+    c_advanced = {
+        "CMSC411": 3,
+        "CMSC412": 3,
+        "CMSC414": 3,
+        "CMSC430": 3,
+        "CMSC466": 3
+    }
+
     c = {
         "MATH140": 4,
         "MATH141": 4,
@@ -119,7 +156,7 @@ if __name__ == '__main__':
         "CMSC401": 3,
         "CMSC402": 3,
         "ART403": 3,
-        "ART405": 4
+        "ART405": 4,
     }
 
-    print(UL_concentration(c))
+    print(general_track(c_advanced))
