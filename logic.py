@@ -2,6 +2,34 @@ import requests
 import json
 import time
 
+fsaw, fspw, fsoc, fsma, fsar, fsar_ma = False, False, False, False, False, False
+
+dsnl_count = 0
+dsnl = False
+dsns = False
+
+dsns_dssp_count = 0
+dshs_dsns_count = 0
+dshs_dshu_count = 0
+dshs_dssp_count = 0
+dshu_dssp_count = 0
+
+dshs_count = 0
+dshs = False
+
+dshu_count = 0
+dshu = False
+
+dssp_count = 0
+dssp = False
+
+
+
+i_series_count = 0
+i_series = False
+
+dvup_count = 0
+diversity = False
 
 def is_stat_4XX(stat_course):
     if("STAT4" in stat_course):
@@ -178,7 +206,7 @@ def b_search(course_dict_list, low, high, c):
         return -1
 
 def fulfills_FS(courses):
-    fsaw, fspw, fsoc, fsma, fsar, fsar_ma = False, False, False, False, False, False
+    
     
     with open("202008.json") as file:
         courses_json = json.load(file)
@@ -198,7 +226,8 @@ def fulfills_FS(courses):
         elif(gen_ed == ["FSOC"]):
             fsoc = True
         elif(gen_ed == ["FSAR", "FSMA"]):
-            fsar_ma = True
+            fsar = True
+            fsma = True
         elif(gen_ed == ["FSAR"]):
             fsar = True
         elif(gen_ed == ["FSMA"]):
@@ -207,16 +236,10 @@ def fulfills_FS(courses):
 
     if(fsaw and fspw and fsoc and fsar and fsma):
         return True
-    elif(fsaw and fspw and fsoc and (fsar or fsma) and fsar_ma is True):
-        return True
     else:
         return False
 
 def fulfills_DS(courses):
-    dsnl_count = 0
-    dsnl = False
-    dsns = False
-
     with open("202008.json") as file:
         courses_json = json.load(file)
 
@@ -228,6 +251,15 @@ def fulfills_DS(courses):
         #DSNL
         if(gen_ed == ["DSNL"]):
             dsnl_count += course_data[1]
+
+        elif(gen_ed == ["DSNL", "SCIS"]):
+            dsnl_count += course_data[1]
+            i_series_count += course_data[1]
+
+        elif(gen_ed == ["DSNL", "DVUP"]):
+            dsnl_count += course_data[1]
+            dvup_count += course_data[1]
+
         elif("DSNL(fkwh" in gen_ed[0]):
             coreq = gen_ed[0][ 9:gen_ed[0].index(")") ]
             coreq_taken = False
@@ -243,7 +275,150 @@ def fulfills_DS(courses):
             elif("DSNS" in gen_ed[0])
                 dsns = True
         
+        if(len(gen_ed) == 2 and gen_ed[1] == "SCIS"):
+            i_series_count += course_data[1]
+        elif(len(gen_ed) == 2 and gen_ed[1] == "DVUP"):
+            dvup_count += course_data[1]
+        elif(len(gen_ed) == 3 and gen_ed[1] == "DVUP" and gen_ed[2] == "SCIS"):
+            dvup_count += course_data[1]
+            i_series_count += course_data[1]
+
+        # DSNS
+        if(gen_ed == ["DSNS"]):
+            dsns = True
+        elif(gen_ed == ["DSHSDSNS"]):
+            if(dsns == True):
+                dshs_count += course_data[1]
+            else:
+                dshs_dsns_count += course_data[1]
+        elif(gen_ed == ["DSNSDSSP"]):
+            if(dsns == True):
+                dssp_count += course_data[1]
+            else:
+                dshs_dsns_count += course_data[1]
+        
+        # DSHS
+        if(gen_ed == ["DSHS"]):
+            dshs_count += course_data[1]
+        elif(gen_ed == ["DSHSDSHU"]):
+            dshs_dshu_count += course_data[1]
+        elif(gend_ed == ["DSHSDSSP"]):
+            dshs_dssp_count += course_data[1]
+        
+        # DSHU
+        elif(gen_ed == ["DSHU"]):
+            dshu_count += course_data[1]
+        elif(gen_ed == ["DSHUDSSP"]):
+            dshu_dssp_count += course_data[1]
+        # DSSP
+        elif(gen_ed == ["DSSP"]):
+            dssp_count += course_data[1]
+
     
+    if(dsnl_count >= 4):
+        dsnl = True
+    if(dshs >= 6):
+        dshs = True
+    if(dshu >= 6):
+        dshu = True
+    if(dssp >= 6):
+        dssp = True
+
+    # Class can be either DSNS or DSHS
+    if(dsns is False and dshs is True):
+        if(dshs_dsns_count >= 3):
+            dshs_dsns_count -= 3
+            dsns = True
+    elif(dsns is True and dshs is False):
+        diff = 6 - dshs_count
+        if(dshs_dsns_count >= diff):
+            dshs_dsns_count -= diff
+            dshs = True
+    elif(dsns is False and dshs is False):
+        diff = 6 - dshs_count
+        if(dshs_dsns_count >= (3 + diff)):
+            dshs_dsns_count -= diff
+            dsns = True
+            dshs = True
+    
+    # Class can be either DSHS or DSHU
+    if(dshs is False and dshu is True):
+        diff = 6 - dshs_count
+        if(dshs_dshu_count >= diff):
+            dshs_dshu_count -= diff
+            dshs = True
+    elif(dshs is True and dshu is False):
+        diff = 6 - dshu_count
+        if(dshs_dshu_count >= diff):
+            dshs_dshu_count -= diff
+            dshu = True
+    elif(dshs is False and dshu is False):
+        diff1 = 6 - dshs_count
+        diff2 = 6 - dshu_count
+        if(dshs_dsns_count >= (diff1 + diff2)):
+            dshs_dshu_count -= (diff1 + diff2)
+            dshs = True
+            dshu = True
+    
+    # Class can be either DSNS or DSSP
+    if(dsns is False and dssp is True):
+        diff = 3
+        if(dsns_dssp_count >= diff):
+            dsns_dssp_count -= diff
+            dsns = True  
+    elif(dsns is True and dssp is False):
+        diff = 6 - dssp_count
+        if(dsns_dssp_count >= diff):
+            dsns_dssp_count -= diff
+            dssp = True
+    elif(dsns is False and dssp is False):
+        diff1 = 6 - dssp_count
+        diff2 = 3
+        if(dsns_dssp_count >= (diff1 + diff2)):
+            dsns_dssp_count -= (diff1 + diff2)
+            dsns = True
+            dssp = True
+    
+    # Class can be either DSHU or DSSP
+    if(dshu is False and dssp is True):
+        diff = 6 - dshu_count
+        if(dshu_dssp_count >= diff):
+            dshu_dssp_count -= diff
+            dshu = True  
+    elif(dshu is True and dssp is False):
+        diff = 6 - dssp_count
+        if(dshu_dssp_count >= diff):
+            dshu_dssp_count -= diff
+            dssp = True
+    elif(dshu is False and dssp is False):
+        diff1 = 6 - dssp_count
+        diff2 = 6 - dshu_count
+        if(dshu_dssp_count >= (diff1 + diff2)):
+            dshu_dssp_count -= (diff1 + diff2)
+            dshu = True
+            dssp = True
+    
+    # Class can be either DSHS or DSSP
+    if(dshs is False and dssp is True):
+        diff = 6 - dshs_count
+        if(dshs_dssp_count >= diff):
+            dshs_dssp_count -= diff
+            dshs = True  
+    elif(dshs is True and dssp is False):
+        diff = 6 - dssp_count
+        if(dshs_dssp_count >= diff):
+            dshs_dssp_count -= diff
+            dssp = True
+    elif(dshu]s is False and dssp is False):
+        diff1 = 6 - dssp_count
+        diff2 = 6 - dshs_count
+        if(dshs_dssp_count >= (diff1 + diff2)):
+            dshs_dssp_count -= (diff1 + diff2)
+            dshs = True
+            dssp = True
+    
+    return (dsnl and dsns and dshu and dshs and dssp)
+
 # def gen_ed(courses):
 #     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
 #        (fulfills_iseries(courses) and fulfills_diversity(courses))):
