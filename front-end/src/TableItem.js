@@ -8,15 +8,17 @@ class TableItem extends React.Component {
         this.textRef = React.createRef();
     }
 
+    //  The ternary operators in the className section serve to show or hide elements. The ones in the innerText 
+    //  basically just null check to make sure there are classes. The data comes in the form of a list of tuples
     render () {
         return (
             <td>
                 <div className="dropdown">
                     <input ref={this.textRef} onKeyUp={this.dropdownOn} onBlur={this.dropdownOff} height="100%"/>
                     <div className={this.state.active && this.state.classes.length > 0 ? "show dropdown-content" : "dropdown-content"}>
-                        <div className="dropdown-item" onMouseDown={this.setText}>{this.state.classes.length > 0 ? this.state.classes[0] : ""}</div>
-                        <div className={this.state.classes.length > 1 ? "dropdown-item" : "dropdown-item hide"} onMouseDown={this.setText}>{this.state.classes[1] ? this.state.classes[1] : ""}</div>
-                        <div className={this.state.classes.length > 2 ? "dropdown-item" : "dropdown-item hide"} onMouseDown={this.setText}>{this.state.classes[2] ? this.state.classes[2] : ""}</div>
+                        <div className="dropdown-item" onMouseDown={this.setText}>{this.state.classes.length > 0 ? `${this.state.classes[0][0]} (${this.state.classes[0][1]})`  : ""}</div>
+                        <div className={this.state.classes.length > 1 ? "dropdown-item" : "dropdown-item hide"} onMouseDown={this.setText}>{this.state.classes[1] ? `${this.state.classes[1][0]} (${this.state.classes[1][1]})` : ""}</div>
+                        <div className={this.state.classes.length > 2 ? "dropdown-item" : "dropdown-item hide"} onMouseDown={this.setText}>{this.state.classes[2] ? `${this.state.classes[2][0]} (${this.state.classes[2][1]})` : ""}</div>
                     </div>
                 </div>
             </td>

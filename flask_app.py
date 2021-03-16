@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-import flask
+from flask import jsonify
 
 import mysql.connector
 import requests
@@ -21,8 +21,7 @@ app = Flask (__name__)
 def search_courses ():
     cursor.execute(f"SELECT course_id, credits FROM courses WHERE course_id LIKE '{(request.args.get('letters')+'%')}'")
     results = cursor.fetchall()
-    print (list(map(lambda x: x[0], results[0:3])))
-    return {"results": list(map(lambda x: x[0] + " (" + str(x[1]) + ")", results[0:3]))}
+    return jsonify(results[0:3])
 
 if __name__ == "__main__":
     app.run(debug=True, port=3001)

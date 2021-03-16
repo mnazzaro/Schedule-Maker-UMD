@@ -41,7 +41,6 @@ class App extends React.Component {
     findClasses = async (letters) => {
         let data = await fetch ("/search_courses?letters="+letters)
             .then(res => res.json())
-            .then(res => res["results"])
         return data;
     }
 }

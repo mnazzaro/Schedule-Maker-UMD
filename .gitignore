@@ -1,2 +1,4 @@
 /.vscode
 202008.json
+node_modules
+**/node_modules
