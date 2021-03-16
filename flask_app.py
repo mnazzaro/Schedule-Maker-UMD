@@ -1,8 +1,6 @@
-from flask import Flask
+import requests
 
-app = Flask (__name__)
 
-@app.route("/", methods=["GET"])
-def get ():
-
+req = requests.get("https://api.umd.io/v1/courses/MATH140?semester=202008")
+print (req)
 
