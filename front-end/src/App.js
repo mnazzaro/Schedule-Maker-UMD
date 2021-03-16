@@ -48,8 +48,10 @@ class App extends React.Component {
     }
 
     findClasses = (letters) => {
-        let re = new RegExp(letters)
+        let re = new RegExp("^" + letters)
+        console.log(re.toString())
         let temp = this.state.courses.filter((course) => re.test(course["course_id"]))
+        console.log(temp);
         return temp.length <= 3 ? temp : temp.slice(3);
     }
 }

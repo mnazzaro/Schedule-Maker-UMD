@@ -45,3 +45,4 @@ input {
 .dropdown-item:hover {background-color: #ddd}
 
 .show {display:block;} 
+.hide {display:none;}

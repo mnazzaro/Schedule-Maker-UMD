@@ -1,6 +1,9 @@
-import requests
+from flask import Flask
 
+app = Flask (__name__)
 
-req = requests.get("https://api.umd.io/v1/courses/MATH140?semester=202008")
-print (req)
+@app.route("/submit", methods=["GET"])
+def run_course_info ():
+    
+
 
