@@ -96,6 +96,14 @@ def meets_UL(courses, dept):
     
     return UL_credits >= 12
 
+def general_track(courses):
+    systems = ["CMSC411", "CMSC412", "CMSC414", "CMSC416", "CMSC417"]
+    info_processing = ["CMSC420", "CMSC421", "CMSC422", "CMSC423", "CMSC424", "CMSC426", "CMSC427", "CMSC470"]
+    SE_PL = ["CMSC430", "CMSC433", "CMSC434", "CMSC435", "CMSC436"]
+    theory = ["CMSC451", "CMSC452", "CMSC456", "CMSC457"]
+    num_analysis = ["CMSC460", "CMSC466"]
+
+    
 if __name__ == '__main__':
     c = {
         "MATH140": 4,
