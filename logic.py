@@ -160,21 +160,16 @@ def general_track(courses):
     return False
 
 def b_search(course_dict_list, low, high, c):
-    # Check base case
     if high >= low:
  
         mid = (high + low) // 2
  
-        # If element is present at the middle itself
         if course_dict_list[mid]["course_id"] == c:
-            return course_dict_list[mid]["gen_ed"]
+            return course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]
  
-        # If element is smaller than mid, then it can only
-        # be present in left subarray
         elif course_dict_list[mid]["course_id"] > c:
             return b_search(course_dict_list, low, mid - 1, c)
  
-        # Else the element can only be present in right subarray
         else:
             return b_search(course_dict_list, mid + 1, high, c)
  
@@ -194,7 +189,7 @@ def fulfills_FS(courses):
         # if(response.status_code == 200):
         #     course_data = json.loads(response.text)[0]
         #     try:
-        gen_ed = b_search(courses_json, 0, len(courses_json), c)
+        gen_ed = b_search(courses_json, 0, len(courses_json), c)[0]
         #gen_ed = course_data["gen_ed"][0]
         if(gen_ed == ["FSAW"]):
             fsaw = True
@@ -216,20 +211,38 @@ def fulfills_FS(courses):
         return True
     else:
         return False
-    
 
 def fulfills_DS(courses):
-    for c in list(courses):
-        response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
-        response = requests.get(response_str)
-        course_data = json.loads(response.text)[0]
-        try:
-            gen_ed = course_data["gen_ed"][0]
+    dsnl_count = 0
+    dsnl = False
+    dsns = False
 
-        except:
-            # this course doesn't meet the DS req
-            continue
+    with open("202008.json") as file:
+        courses_json = json.load(file)
 
+    given_courses = list(courses)
+    for c in given_courses:
+        course_data = b_search(courses_json, 0, len(courses_json), c)
+        gen_ed = course_data[0]
+
+        #DSNL
+        if(gen_ed == ["DSNL"]):
+            dsnl_count += course_data[1]
+        elif("DSNL(fkwh" in gen_ed[0]):
+            coreq = gen_ed[0][ 9:gen_ed[0].index(")") ]
+            coreq_taken = False
+
+            for course_taken in given_courses:
+                if(coreq in course_taken):
+                    coreq_taken = True
+                    break
+            
+            if(coreq_taken):
+                dsnl_count += (course_data[1] + 1)
+                dsnl = True
+            elif("DSNS" in gen_ed[0])
+                dsns = True
+        
     
 # def gen_ed(courses):
 #     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
@@ -274,6 +287,6 @@ if __name__ == '__main__':
     }
 
     start = time.time()
-    print(fulfills_FS(c))
+    print(fulfills_FS(gen_eds_fs))
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))

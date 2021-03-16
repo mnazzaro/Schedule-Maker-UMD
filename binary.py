@@ -31,5 +31,5 @@ if __name__ == '__main__':
         courses = json.load(file)
 
     #print(courses[5]["course_id"])
-    print(b_search(courses, 0, len(courses), "CMSC330"))
+    print(b_search(courses, 0, len(courses), "PHYS261"))
 
