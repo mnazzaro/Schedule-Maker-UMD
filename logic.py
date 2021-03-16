@@ -1,5 +1,7 @@
 import requests
 import json
+import time
+
 
 def is_stat_4XX(stat_course):
     if("STAT4" in stat_course):
@@ -157,31 +159,56 @@ def general_track(courses):
     
     return False
 
+def b_search(course_dict_list, low, high, c):
+    # Check base case
+    if high >= low:
+ 
+        mid = (high + low) // 2
+ 
+        # If element is present at the middle itself
+        if course_dict_list[mid]["course_id"] == c:
+            return course_dict_list[mid]["gen_ed"]
+ 
+        # If element is smaller than mid, then it can only
+        # be present in left subarray
+        elif course_dict_list[mid]["course_id"] > c:
+            return b_search(course_dict_list, low, mid - 1, c)
+ 
+        # Else the element can only be present in right subarray
+        else:
+            return b_search(course_dict_list, mid + 1, high, c)
+ 
+    else:
+        # Element is not present in the array
+        return -1
 
 def fulfills_FS(courses):
     fsaw, fspw, fsoc, fsma, fsar, fsar_ma = False, False, False, False, False, False
-
+    
+    with open("202008.json") as file:
+        courses_json = json.load(file)
+    
     for c in list(courses):
-        response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
-        response = requests.get(response_str)
-        course_data = json.loads(response.text)[0]
-        try:
-            gen_ed = course_data["gen_ed"][0]
-            if(gen_ed == ["FSAW"]):
-                fsaw = True
-            elif(gen_ed == ["FSPW"]):
-                fspw = True
-            elif(gen_ed == ["FSOC"]):
-                fsoc = True
-            elif(gen_ed == ["FSAR","FSMA"]):
-                fsar_ma = True
-            elif(gen_ed == ["FSAR"]):
-                fsar = True
-            elif(gen_ed == ["FSMA"]):
-                fsma = True
-        except:
-            # This course doesn't fulfill a gen-ed
-            continue
+        # response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
+        # response = requests.get(response_str)
+        # if(response.status_code == 200):
+        #     course_data = json.loads(response.text)[0]
+        #     try:
+        gen_ed = b_search(courses_json, 0, len(courses_json), c)
+        #gen_ed = course_data["gen_ed"][0]
+        if(gen_ed == ["FSAW"]):
+            fsaw = True
+        elif(gen_ed == ["FSPW"]):
+            fspw = True
+        elif(gen_ed == ["FSOC"]):
+            fsoc = True
+        elif(gen_ed == ["FSAR", "FSMA"]):
+            fsar_ma = True
+        elif(gen_ed == ["FSAR"]):
+            fsar = True
+        elif(gen_ed == ["FSMA"]):
+            fsma = True
+
 
     if(fsaw and fspw and fsoc and fsar and fsma):
         return True
@@ -189,6 +216,20 @@ def fulfills_FS(courses):
         return True
     else:
         return False
+    
+
+def fulfills_DS(courses):
+    for c in list(courses):
+        response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
+        response = requests.get(response_str)
+        course_data = json.loads(response.text)[0]
+        try:
+            gen_ed = course_data["gen_ed"][0]
+
+        except:
+            # this course doesn't meet the DS req
+            continue
+
     
 # def gen_ed(courses):
 #     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
@@ -232,4 +273,7 @@ if __name__ == '__main__':
         "ART405": 4,
     }
 
-    print(fulfills_FS(gen_eds_fs))
+    start = time.time()
+    print(fulfills_FS(c))
+    end = time.time()
+    print("Elapsed Time: {time}".format(time = end - start))
