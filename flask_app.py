@@ -23,6 +23,10 @@ def search_courses ():
     results = cursor.fetchall()
     return jsonify(results[0:3])
 
+@app.route("/run_schedule", methods=["POST"])
+def run_schedule ():
+    return {"top_left": json.loads(request.data)[0][0]}
+
 if __name__ == "__main__":
     app.run(debug=True, port=3001)
     
