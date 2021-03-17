@@ -40,7 +40,7 @@ class App extends React.Component {
                         {table}
                     </tbody>
                 </table>
-                <input type="submit" value="Check Schedule"/> 
+                <input id="submit" type="submit" value="Check Schedule"/> 
             </form>
         );
     }

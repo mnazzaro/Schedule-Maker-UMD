@@ -21,7 +21,7 @@ app = Flask (__name__)
 
 @app.route("/search_courses", methods=["GET"])
 def search_courses ():
-    cursor.execute(f"SELECT course_id, credits FROM courses WHERE course_id LIKE '{(request.args.get('letters')+'%')}'")
+    cursor.execute("SELECT course_id, credits FROM courses WHERE course_id LIKE %s", (request.args.get('letters')+'%',))
     results = cursor.fetchall()
     return jsonify(results[0:3])
 
