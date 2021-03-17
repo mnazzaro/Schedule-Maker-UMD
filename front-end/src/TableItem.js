@@ -1,5 +1,6 @@
 import React from 'react'
 
+//  This Component is basically a <td> containing a text input and a drop down (which is decides whether to show or hide)
 class TableItem extends React.Component {
 
     constructor (props) {
@@ -25,6 +26,7 @@ class TableItem extends React.Component {
         )
     }
 
+    //  Turns the dropdown on, async because find classes queries for classes and gives a promise
     dropdownOn = async () => {
         let classes = await this.props.findClasses(this.textRef.current.value);
         this.setState({
@@ -37,11 +39,13 @@ class TableItem extends React.Component {
         this.setState({active: false})
     }
 
+    //  Send update back up to the App component and change state here
     handleChange = (event) => {
         this.props.update(event.target.value, this.props.name)
         this.setState({value: event.target.value});
     }
 
+    //  Send update back up to the App component and change state here
     setText = (event) => {
         this.props.update(event.target.innerText, this.props.name)
         this.setState({value: event.target.innerText, active: false});

@@ -11,10 +11,11 @@ db = mysql.connector.connect(
 
 cursor = db.cursor()
 
+# This function takes a list of course dictionaries and grabs the values from each and sticks them into the MySQL db
 def populate_db (cdl):
 
     for course in cdl:
-        if len(course['gen_ed']) > 0: 
+        if len(course['gen_ed']) > 0: #Check to see if it's a gened class. If it is, the list won't be empty
             gened = json.dumps(course['gen_ed'][0]) 
         else: 
             gened = "[]"
@@ -25,7 +26,7 @@ def populate_db (cdl):
 
 req = requests.get("https://api.umd.io/v1/courses?semester=202101")
 page = 1
-while page < 148:
+while page < 148: #This magic number is the number of pages in the umd.io courses api. It will likely have to change for future semesters
     print (f"Page: {page}, Status Code: {req.status_code}")
     populate_db(json.loads(req.text))
     page += 1

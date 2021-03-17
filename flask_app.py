@@ -6,6 +6,8 @@ import mysql.connector
 import requests
 import json
 
+import logic
+
 db = mysql.connector.connect(
     host="localhost",
     username="root",
