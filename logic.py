@@ -273,15 +273,15 @@ def fulfills_DS(courses):
             continue
 
         #DSNL
-        if(gen_ed[0] == ["DSNL"]):
+        if(gen_ed == ["DSNL"]):
             global dsnl_count
             dsnl_count += int(course_data[1])
 
-        elif(gen_ed[0] == ["DSNL", "SCIS"]):
+        elif(gen_ed == ["DSNL", "SCIS"]):
             dsnl_count += int(course_data[1])
             i_series_count += int(course_data[1])
 
-        elif(gen_ed[0] == ["DSNL", "DVUP"]):
+        elif(gen_ed == ["DSNL", "DVUP"]):
             dsnl_count += int(course_data[1])
             dvup_count += int(course_data[1])
 
@@ -596,7 +596,30 @@ def fulfills_DS(courses):
     
     return (dsnl and dsns and dshu and dshs and dssp)
 
-# def gen_ed(courses):
+def fulfills_iseries(courses):
+    global i_series_count
+
+    with open("202008.json") as file:
+        courses_json = json.load(file)
+
+    given_courses = list(courses)
+    for c in given_courses:
+        course_data = b_search(courses_json, 0, len(courses_json), c)
+        gen_ed = course_data[0]
+
+        if(len(gen_ed) == 0):
+            continue
+
+        if(gen_ed == ["SCIS"]):
+            i_series_count += int(course_data[1])
+        elif(len(gen_ed) >= 2 and gen_ed[1] == "SCIS"):
+            i_series_count += int(course_data[1])
+        elif(len(gen_ed) >= 3 and gen_ed[2] == "SCIS"):
+            i_series_count += int(course_data[1])
+    
+    return (i_series_count >= 6)
+
+# def fulfills_gen_ed(courses):
 #     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
 #        (fulfills_iseries(courses) and fulfills_diversity(courses))):
 #         return True
@@ -656,14 +679,14 @@ if __name__ == '__main__':
         "ARHU319A": 3, #DSHU or DSSP --> DSSP
         "ARTH200": 3, #DSHU         --> DSHU
         "CLAS312": 3, #DSHS or DSHU  --> DSHU
-        "CPMS225": 3, #DSHS         --> DSHS
+        "AGST130": 3, #DSHS         --> DSHS
         "FMSC302": 3, #DSHS or DSSP --> DSHS
-        "PHYS260": 3,
-        "PHYS261": 3
-
+        "AOSC200": 3,
+        "AOSC201": 3
     }
 
     start = time.time()
     print(fulfills_DS(ds_test_set_2))
+    print(fulfills_iseries(ds_test_set_2))
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
