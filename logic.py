@@ -389,7 +389,7 @@ def fulfills_DS(courses):
                 if(dshs_count >= 6):
                     dshs = True
             
-            dshs_dshu_count = 0
+            dshs_dsns_count = 0
     
     # Class can be either DSHS or DSHU
     if(dshs is False and dshu is True):
@@ -425,18 +425,23 @@ def fulfills_DS(courses):
             dshu_count += diff2
         else:
             if(dshs_count + dshs_dshu_count >= 6):
-                dshs_count += dshs_dshu_count # if dshs is close to completion
-                                              # give it all to dshs
+                dshs_count += diff1 # if dshs is close to completion
+                                              # give dshs JUST WHAT IT NEEDS
                 dshs = True
+                dshs_dshu_count -= diff1
             elif(dshu_count + dshs_dshu_count >= 6):
-                dshu_count += dshs_dshu_count # if dshu is close to completion
-                                              # give it all to dshu
+                dshu_count += diff2 # if dshu is close to completion
+                                              # give dshu JUST WHAT IT NEEDS
                 dshu = True
+                dshs_dshu_count -= diff2
             else:
-                dshs_count += dshs_dshu_count # Just give to dshs and call it a day
-                if(dshs_count >= 6):
-                    dshs = True
-            dshs_dshu_count = 0
+                if(dshs is False and dshu is False):
+                    dshs_count += dshs_dshu_count # Just give to dshs and call it a day
+                elif(dshs is True and dshu is False):
+                    dshu_count += dshs_dshu_count # we MUST give it to dshu
+                elif(dshs is False and dshu is True):
+                    dshs_count += dshs_dshu_count # we MUST give it to dshs
+                dshs_dshu_count = 0
 
     # Class can be either DSNS or DSSP
     if(dsns is False and dssp is True):
@@ -461,8 +466,8 @@ def fulfills_DS(courses):
             dssp_count += dshs_dshu_count
             dshs_dshu_count = 0
     elif(dsns is False and dssp is False):
-        diff1 = 3
-        diff2 = 6 - dssp_count
+        diff1 = 3 # dsns credits needed
+        diff2 = 6 - dssp_count # dssp credits needed
         if(dsns_dssp_count >= (diff1 + diff2)):
             dsns_dssp_count -= (diff1 + diff2)
             dsns = True
@@ -476,7 +481,7 @@ def fulfills_DS(courses):
             else:
                 dssp_count += dsns_dssp_count       # Just give the rest to dssp
             
-            dshs_dshu_count = 0
+            dsns_dssp_count = 0
     
     # Class can be either DSHU or DSSP
     if(dshu is False and dssp is True):
@@ -513,18 +518,23 @@ def fulfills_DS(courses):
             dssp_count += diff2
         else:
             if(dshu_count + dshu_dssp_count >= 6):
-                dshu_count += dshu_dssp_count # if dshu is close to completion
-                                              # give it all to dshu
+                dshu_count += diff1 # if dshu is close to completion
+                                              # give it JUST WHAT IT NEEDS
                 dshu = True
-            elif(dssp_count + dshu_dssp_count >= 6):
-                dssp_count += dshu_dssp_count # if dssp is close to completion
-                                              # give it all to dshu
+                dshu_dssp_count -= diff1
+            if(dssp_count + dshu_dssp_count >= 6):
+                dssp_count += diff2 # if dssp is close to completion
+                                              # give it JUST WHAT IT NEEDS
                 dssp = True
+                dshu_dssp_count -= diff2
             else:
-                dshu_count += dshu_dssp_count # Just give to dshu and call it a day
-                if(dshu_count >= 6):
-                    dshu = True
-            dshu_dssp_count = 0
+                if(dshu is False and dssp is False):
+                    dshu_count += dshu_dssp_count # Just give to dshu and call it a day
+                elif(dshu is True and dssp is False):
+                    dssp_count += dshu_dssp_count # Must give it to dssp
+                elif(dshu is False and dssp is True):
+                    dshu_count += dshu_dssp_count # must give it to dshu
+                dshu_dssp_count = 0
     
     # Class can be either DSHS or DSSP
     if(dshs is False and dssp is True):
@@ -560,18 +570,23 @@ def fulfills_DS(courses):
             dssp_count += diff2
         else:
             if(dshs_count + dshs_dssp_count >= 6):
-                dshs_count += dshs_dssp_count # if dshu is close to completion
-                                              # give it all to dshu
+                dshs_count += diff1 # if dshu is close to completion
+                                              # give JUST WHAT IT NEEDS
                 dshs = True
-            elif(dssp_count + dshs_dssp_count >= 6):
-                dssp_count += dshs_dssp_count # if dssp is close to completion
+                dshs_dssp_count -= diff1
+            if(dssp_count + dshs_dssp_count >= 6):
+                dssp_count += diff2 # if dssp is close to completion
                                               # give it all to dshu
                 dssp = True
+                dshs_dssp_count -= diff2
             else:
-                dshs_count += dshs_dssp_count # Just give to dshu and call it a day
-                if(dshs_count >= 6):
-                    dshs = True
-            dshs_dssp_count = 0
+                if(dshs is False and dssp is False):
+                    dshs_count += dshs_dssp_count # Just give to dshu and call it a day
+                elif(dshs is True and dssp is False):
+                    dssp_count += dshs_dssp_count # MUST give it to dssp
+                elif(dshs is False and dssp is True):
+                    dshs_count += dshs_dssp_count # MUST give it to dshs
+                dshs_dssp_count = 0
     
     print("dsnl: " + str(dsnl))
     print("dsns: " + str(dsns))
@@ -623,7 +638,7 @@ if __name__ == '__main__':
     #     "ART405": 4,
     # }
 
-    ds_test_set = {
+    ds_test_set_1 = {
         "AASP200": 3,
         "PLCY100": 3,
         "CCJS225": 3,
@@ -635,7 +650,20 @@ if __name__ == '__main__':
         "PHIL220": 3
     }
 
+    ds_test_set_2 = {
+        "AREC200": 3, #DSNS or DSSP --> DSNS
+        "ARHU275": 3, #DSHU or DSSP --> DSSP
+        "ARHU319A": 3, #DSHU or DSSP --> DSSP
+        "ARTH200": 3, #DSHU         --> DSHU
+        "CLAS312": 3, #DSHS or DSHU  --> DSHU
+        "CPMS225": 3, #DSHS         --> DSHS
+        "FMSC302": 3, #DSHS or DSSP --> DSHS
+        "PHYS260": 3,
+        "PHYS261": 3
+
+    }
+
     start = time.time()
-    print(fulfills_DS(ds_test_set))
+    print(fulfills_DS(ds_test_set_2))
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
