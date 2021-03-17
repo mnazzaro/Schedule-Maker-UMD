@@ -104,7 +104,7 @@ def lower_level_cs(courses):
         if(set(lower_level_reqs) <= set(courses)):
             return True
     
-    return False
+    return (False,0)
 
 
 def UL_concentration(courses):
@@ -116,7 +116,7 @@ def UL_concentration(courses):
         if(meets_UL(courses, subj)):
             return True
     
-    return False
+    return (False,0)
 
 
 def meets_UL(courses, dept):
@@ -185,7 +185,7 @@ def general_track(courses):
     if(misc_count >= 2):
         return True
     
-    return False
+    return (False,0)
 
 def b_search(course_dict_list, low, high, c):
     if high >= low:
@@ -644,9 +644,20 @@ def enough_credits(courses):
 
 def valid_schedule(c):
     courses = [item for sublist in c for item in sublist]
-    return (enough_credits(courses) and fulfills_gen_ed(courses) and lower_level_math(courses) \
-        and lower_level_cs(courses) and UL_concentration(courses) \
-            and general_track(courses))
+    ret_val = {
+        "enough_credits": (enough_credits(courses), 0),
+        "lower_level_math": (lower_level_math(courses), 0),
+        "lower_level_cs": (lower_level_cs(courses), 0),
+        "upper_level": (UL_concentration(courses), 0),
+        "general_track": (general_track(courses), 0),
+        "gened": (fulfills_gen_ed(courses), 0)
+    }
+    json_object = json.dumps(ret_val)
+    return json_object
+    
+    # return (enough_credits(courses) and fulfills_gen_ed(courses) and lower_level_math(courses) \
+    #     and lower_level_cs(courses) and UL_concentration(courses) \
+    #         and general_track(courses))
 
 
 if __name__ == '__main__':
@@ -718,7 +729,7 @@ if __name__ == '__main__':
     UL_test = ["AREC300", "AREC301", "AREC303", "AREC304"]
     gen_track = [""]
 
-    schedule = [["CMSC131"]]
+    schedule = [["CMSC131", "CMSC132"]]
 
     start = time.time()
     # print(lower_level_math(ll_math))
