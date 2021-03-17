@@ -14,7 +14,7 @@ class App extends React.Component {
             enough_credits: "",
             lower_level_math: "",
             lower_level_cs: "",
-            upper_level_concentration: "",
+            upper_level: "",
             general_track: "",
             gened: "",
         }
@@ -54,7 +54,7 @@ class App extends React.Component {
                 </form>
                 <Warnings enough_credits={this.state.enough_credits} 
                     lower_level_math={this.state.lower_level_math} lower_level_cs={this.state.lower_level_cs}
-                    upper_level_concentration={this.state.upper_level_concentration} general_track={this.state.general_track}
+                    upper_level={this.state.upper_level} general_track={this.state.general_track}
                     gened={this.state.gened}/>
             </div>
         );
