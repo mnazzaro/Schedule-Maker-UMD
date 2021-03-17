@@ -104,7 +104,7 @@ def lower_level_cs(courses):
         if(set(lower_level_reqs) <= set(courses)):
             return True
     
-    return (False,0)
+    return False
 
 
 def UL_concentration(courses):
@@ -116,7 +116,7 @@ def UL_concentration(courses):
         if(meets_UL(courses, subj)):
             return True
     
-    return (False,0)
+    return False
 
 
 def meets_UL(courses, dept):
@@ -191,7 +191,8 @@ def b_search(course_dict_list, low, high, c):
     if high >= low:
  
         mid = (high + low) // 2
- 
+
+        #print(course_dict_list[mid]["course_id"])
         if course_dict_list[mid]["course_id"] == c:
             return [course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]]
  
@@ -212,7 +213,13 @@ def fulfills_FS(courses):
         courses_json = json.load(file)
     
     for c in courses:
+        #print(b_search(courses_json, 0, len(courses_json), c)[0])
+
         gen_ed = b_search(courses_json, 0, len(courses_json), c)
+        if(len(gen_ed) == 0):
+            continue
+        
+        gen_ed = gen_ed[0]
 
         if(gen_ed == ["FSAW"]):
             fsaw = True
@@ -258,6 +265,7 @@ def fulfills_DS(given_courses):
 
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
+        print("course_data" + str(course_data))
         gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
