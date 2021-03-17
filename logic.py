@@ -193,7 +193,7 @@ def b_search(course_dict_list, low, high, c):
         mid = (high + low) // 2
  
         if course_dict_list[mid]["course_id"] == c:
-            return course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]
+            return [course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]]
  
         elif course_dict_list[mid]["course_id"] > c:
             return b_search(course_dict_list, low, mid - 1, c)
@@ -240,6 +240,27 @@ def fulfills_FS(courses):
         return False
 
 def fulfills_DS(courses):
+    # globals
+    global dsnl_count
+    global dshs_count
+    global dshu_count
+    global dssp_count
+    
+    global dsnl
+    global dsns
+    global dshs
+    global dshu
+    global dssp
+
+    global dsns_dssp_count
+    global dshs_dsns_count
+    global dshs_dshu_count
+    global dshu_dssp_count
+    global dshs_dssp_count
+
+    global i_series_count
+    global dvup_count
+
     with open("202008.json") as file:
         courses_json = json.load(file)
 
@@ -248,19 +269,23 @@ def fulfills_DS(courses):
         course_data = b_search(courses_json, 0, len(courses_json), c)
         gen_ed = course_data[0]
 
+        if(len(gen_ed) == 0):
+            continue
+
         #DSNL
-        if(gen_ed == ["DSNL"]):
-            dsnl_count += course_data[1]
+        if(gen_ed[0] == ["DSNL"]):
+            global dsnl_count
+            dsnl_count += int(course_data[1])
 
-        elif(gen_ed == ["DSNL", "SCIS"]):
-            dsnl_count += course_data[1]
-            i_series_count += course_data[1]
+        elif(gen_ed[0] == ["DSNL", "SCIS"]):
+            dsnl_count += int(course_data[1])
+            i_series_count += int(course_data[1])
 
-        elif(gen_ed == ["DSNL", "DVUP"]):
-            dsnl_count += course_data[1]
-            dvup_count += course_data[1]
+        elif(gen_ed[0] == ["DSNL", "DVUP"]):
+            dsnl_count += int(course_data[1])
+            dvup_count += int(course_data[1])
 
-        elif("DSNL(fkwh" in gen_ed[0]):
+        elif(len(gen_ed) > 0 and "DSNL(fkwh" in gen_ed[0]):
             coreq = gen_ed[0][ 9:gen_ed[0].index(")") ]
             coreq_taken = False
 
@@ -270,58 +295,59 @@ def fulfills_DS(courses):
                     break
             
             if(coreq_taken):
-                dsnl_count += (course_data[1] + 1)
+                print(course_data[1])
+                dsnl_count += (int(course_data[1]) + 1)
                 dsnl = True
-            elif("DSNS" in gen_ed[0])
+            elif("DSNS" in gen_ed[0]):
                 dsns = True
         
         if(len(gen_ed) == 2 and gen_ed[1] == "SCIS"):
-            i_series_count += course_data[1]
+            i_series_count += int(course_data[1])
         elif(len(gen_ed) == 2 and gen_ed[1] == "DVUP"):
-            dvup_count += course_data[1]
+            dvup_count += int(course_data[1])
         elif(len(gen_ed) == 3 and gen_ed[1] == "DVUP" and gen_ed[2] == "SCIS"):
-            dvup_count += course_data[1]
-            i_series_count += course_data[1]
+            dvup_count += int(course_data[1])
+            i_series_count += int(course_data[1])
 
         # DSNS
-        if(gen_ed == ["DSNS"]):
+        if(gen_ed[0] == "DSNS"):
             dsns = True
-        elif(gen_ed == ["DSHSDSNS"]):
+        elif(gen_ed[0] == "DSHSDSNS"):
             if(dsns == True):
-                dshs_count += course_data[1]
+                dshs_count += int(course_data[1])
             else:
-                dshs_dsns_count += course_data[1]
-        elif(gen_ed == ["DSNSDSSP"]):
+                dshs_dsns_count += int(course_data[1])
+        elif(gen_ed[0] == "DSNSDSSP"):
             if(dsns == True):
-                dssp_count += course_data[1]
+                dssp_count += int(course_data[1])
             else:
-                dshs_dsns_count += course_data[1]
+                dsns_dssp_count += int(course_data[1])
         
         # DSHS
-        if(gen_ed == ["DSHS"]):
-            dshs_count += course_data[1]
-        elif(gen_ed == ["DSHSDSHU"]):
-            dshs_dshu_count += course_data[1]
-        elif(gend_ed == ["DSHSDSSP"]):
-            dshs_dssp_count += course_data[1]
+        if(gen_ed[0] == "DSHS"):
+            dshs_count += int(course_data[1])
+        elif(gen_ed[0] == "DSHSDSHU"):
+            dshs_dshu_count += int(course_data[1])
+        elif(gen_ed[0] == "DSHSDSSP"):
+            dshs_dssp_count += int(course_data[1])
         
         # DSHU
-        elif(gen_ed == ["DSHU"]):
-            dshu_count += course_data[1]
-        elif(gen_ed == ["DSHUDSSP"]):
-            dshu_dssp_count += course_data[1]
+        elif(gen_ed[0] == "DSHU"):
+            dshu_count += int(course_data[1])
+        elif(gen_ed[0] == "DSHUDSSP"):
+            dshu_dssp_count += int(course_data[1])
         # DSSP
-        elif(gen_ed == ["DSSP"]):
-            dssp_count += course_data[1]
+        elif(gen_ed[0] == "DSSP"):
+            dssp_count += int(course_data[1])
 
     
     if(dsnl_count >= 4):
         dsnl = True
-    if(dshs >= 6):
+    if(dshs_count >= 6):
         dshs = True
-    if(dshu >= 6):
+    if(dshu_count >= 6):
         dshu = True
-    if(dssp >= 6):
+    if(dssp_count >= 6):
         dssp = True
 
     # Class can be either DSNS or DSHS
@@ -330,16 +356,18 @@ def fulfills_DS(courses):
             dshs_dsns_count -= 3
             dsns = True
     elif(dsns is True and dshs is False):
-        diff = 6 - dshs_count
+        diff = 6 - dshs_count # we need 6 credits to satisfy dshs
         if(dshs_dsns_count >= diff):
             dshs_dsns_count -= diff
             dshs = True
+            dshs_count += diff
     elif(dsns is False and dshs is False):
         diff = 6 - dshs_count
         if(dshs_dsns_count >= (3 + diff)):
             dshs_dsns_count -= diff
             dsns = True
             dshs = True
+            dshs_count += diff
     
     # Class can be either DSHS or DSHU
     if(dshs is False and dshu is True):
@@ -347,18 +375,22 @@ def fulfills_DS(courses):
         if(dshs_dshu_count >= diff):
             dshs_dshu_count -= diff
             dshs = True
+            dshs_count += diff
     elif(dshs is True and dshu is False):
         diff = 6 - dshu_count
         if(dshs_dshu_count >= diff):
             dshs_dshu_count -= diff
             dshu = True
+            dshu_count += diff
     elif(dshs is False and dshu is False):
         diff1 = 6 - dshs_count
         diff2 = 6 - dshu_count
-        if(dshs_dsns_count >= (diff1 + diff2)):
+        if(dshs_dshu_count >= (diff1 + diff2)):
             dshs_dshu_count -= (diff1 + diff2)
             dshs = True
+            dshs_count += diff1
             dshu = True
+            dshu_count += diff2
     
     # Class can be either DSNS or DSSP
     if(dsns is False and dssp is True):
@@ -371,13 +403,19 @@ def fulfills_DS(courses):
         if(dsns_dssp_count >= diff):
             dsns_dssp_count -= diff
             dssp = True
+            dssp += diff
+        elif(dsns_dssp_count > 0):
+            diff = dsns_dssp_count
+            dsns_dssp_count = 0
+            dssp_count += diff
     elif(dsns is False and dssp is False):
-        diff1 = 6 - dssp_count
-        diff2 = 3
+        diff1 = 3
+        diff2 = 6 - dssp_count
         if(dsns_dssp_count >= (diff1 + diff2)):
             dsns_dssp_count -= (diff1 + diff2)
             dsns = True
             dssp = True
+            dssp_count += diff2
     
     # Class can be either DSHU or DSSP
     if(dshu is False and dssp is True):
@@ -385,37 +423,60 @@ def fulfills_DS(courses):
         if(dshu_dssp_count >= diff):
             dshu_dssp_count -= diff
             dshu = True  
+            dshu_count += diff
     elif(dshu is True and dssp is False):
         diff = 6 - dssp_count
         if(dshu_dssp_count >= diff):
             dshu_dssp_count -= diff
             dssp = True
+            dssp_count += diff
+        elif(dshu_dssp_count > 0):
+            diff = dshu_dssp_count
+            dshu_dssp_count = 0
+            dssp_count += diff
+
     elif(dshu is False and dssp is False):
-        diff1 = 6 - dssp_count
-        diff2 = 6 - dshu_count
+        diff1 = 6 - dshu_count
+        diff2 = 6 - dssp_count
         if(dshu_dssp_count >= (diff1 + diff2)):
             dshu_dssp_count -= (diff1 + diff2)
             dshu = True
+            dshu_count += diff1
             dssp = True
+            dssp_count += diff2
     
     # Class can be either DSHS or DSSP
     if(dshs is False and dssp is True):
         diff = 6 - dshs_count
         if(dshs_dssp_count >= diff):
             dshs_dssp_count -= diff
-            dshs = True  
+            dshs = True
+            dshs_count += diff
     elif(dshs is True and dssp is False):
         diff = 6 - dssp_count
         if(dshs_dssp_count >= diff):
             dshs_dssp_count -= diff
             dssp = True
-    elif(dshu]s is False and dssp is False):
-        diff1 = 6 - dssp_count
-        diff2 = 6 - dshs_count
+            dssp_count += diff
+        elif(dshs_dssp_count > 0):
+            diff = dshs_dssp_count
+            dshs_dssp_count = 0
+            dssp_count += diff
+    elif(dshs is False and dssp is False):
+        diff1 = 6 - dshs_count
+        diff2 = 6 - dssp_count
         if(dshs_dssp_count >= (diff1 + diff2)):
             dshs_dssp_count -= (diff1 + diff2)
             dshs = True
+            dshs_count += diff1
             dssp = True
+            dssp_count += diff2
+    
+    print("dsnl: " + str(dsnl))
+    print("dsns: " + str(dsns))
+    print("dshs: " + str(dshs))
+    print("dshu: " + str(dshu))
+    print("dssp: " + str(dssp))
     
     return (dsnl and dsns and dshu and dshs and dssp)
 
@@ -461,7 +522,19 @@ if __name__ == '__main__':
         "ART405": 4,
     }
 
+    ds_test_set = {
+        "PORT234": 3,
+        "SPAN234": 3,
+        "CLAS312": 3,
+        "HIST187": 3,
+        "AREC200": 3,
+        "ARHU275": 3,
+        "PHYS260": 1,
+        "PHYS261": 3,
+        "PHYS161": 3
+    }
+
     start = time.time()
-    print(fulfills_FS(gen_eds_fs))
+    print(fulfills_DS(ds_test_set))
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
