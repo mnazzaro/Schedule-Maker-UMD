@@ -70,7 +70,7 @@ class App extends React.Component {
 
     //  This method actually submits a post request to the back end with the table data (gathered from the this.state.courses)
     runScheduleCheck = async () => {
-        console.log(JSON.stringify(this.state.courses));
+        console.log(this.state.courses);
         let data = await fetch ("/run_schedule", {
             method: "POST",
             body: JSON.stringify(this.state.courses),
@@ -89,10 +89,13 @@ class App extends React.Component {
     //  Slot will come as as a string containing two integers separated by a space like so: "2 9". Where 
     //  2 would represent the third semester , and 9 would represent the tenth slot 
     updateCourses = (course_id, slot) => {
-        let temp = this.state.courses;
+        let temp = JSON.parse(JSON.stringify(this.state.courses));
         let semester, space;
-        [semester, space] = slot.split(" ")
+        [semester, space] = slot.split(" ");
+        semester = parseInt(semester);
+        space = parseInt(space);
         temp[semester][space] = course_id;
+        console.log(temp);
         this.setState({courses: temp})
     }
 }
