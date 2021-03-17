@@ -191,17 +191,20 @@ def b_search(course_dict_list, low, high, c):
     if high >= low:
  
         mid = (high + low) // 2
+        try:
+            #print(course_dict_list[mid]["course_id"])
+            if course_dict_list[mid]["course_id"] == c:
+                return [course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]]
+    
+            elif course_dict_list[mid]["course_id"] > c:
+                return b_search(course_dict_list, low, mid - 1, c)
+    
+            else:
+                return b_search(course_dict_list, mid + 1, high, c)
+        except:
+            print("Course causing trouble: " + str(c))
+            return -1
 
-        #print(course_dict_list[mid]["course_id"])
-        if course_dict_list[mid]["course_id"] == c:
-            return [course_dict_list[mid]["gen_ed"], course_dict_list[mid]["credits"]]
- 
-        elif course_dict_list[mid]["course_id"] > c:
-            return b_search(course_dict_list, low, mid - 1, c)
- 
-        else:
-            return b_search(course_dict_list, mid + 1, high, c)
- 
     else:
         # Element is not present in the array
         return -1
@@ -216,7 +219,7 @@ def fulfills_FS(courses):
         #print(b_search(courses_json, 0, len(courses_json), c)[0])
 
         gen_ed = b_search(courses_json, 0, len(courses_json), c)
-        if(len(gen_ed) == 0):
+        if(gen_ed == -1):
             continue
         
         gen_ed = gen_ed[0]
@@ -266,6 +269,10 @@ def fulfills_DS(given_courses):
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
         print("course_data" + str(course_data))
+
+        if(course_data == -1):
+            continue
+
         gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
@@ -603,6 +610,9 @@ def fulfills_iseries(given_courses):
 
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
+        if(course_data == -1):
+            continue
+
         gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
@@ -626,6 +636,10 @@ def fulfills_diversity(given_courses):
 
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
+
+        if(course_data == -1):
+            continue
+
         gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
@@ -651,7 +665,8 @@ def enough_credits(courses):
     return credit_sum >= 120
 
 def valid_schedule(c):
-    courses = [item for sublist in c for item in sublist]
+    #courses = [item for sublist in c for item in sublist]
+    courses = c
     ret_val = {
         "enough_credits": (enough_credits(courses), 0),
         "lower_level_math": (lower_level_math(courses), 0),
@@ -750,13 +765,20 @@ if __name__ == '__main__':
     # print(UL_concentration(UL_test))
     # print(general_track(gen_track))
     #print(fulfills_diversity(diversity_test))
-    # print(valid_schedule(schedule))
+    
+    
 
     schedule = [item for sublist in s for item in sublist]
-    print(fulfills_FS(schedule))
-    print(fulfills_DS(schedule))
-    print(fulfills_iseries(schedule))
-    print(fulfills_diversity(schedule))
+
+    print(valid_schedule(schedule))
+    # print("Low math: " + str(lower_level_math(schedule)))
+    # print("Low cs: " + str(lower_level_cs(schedule)))
+    # print("UL: " + str(UL_concentration(schedule)))
+    # print("gentrack: " + str(general_track(schedule)))
+    # print(fulfills_FS(schedule))
+    # print(fulfills_DS(schedule))
+    # print(fulfills_iseries(schedule))
+    # print(fulfills_diversity(schedule))
 
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
