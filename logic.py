@@ -212,7 +212,7 @@ def fulfills_FS(courses):
         courses_json = json.load(file)
     
     for c in courses:
-        gen_ed = b_search(courses_json, 0, len(courses_json), c)[0]
+        gen_ed = b_search(courses_json, 0, len(courses_json), c)
 
         if(gen_ed == ["FSAW"]):
             fsaw = True
@@ -652,8 +652,7 @@ def valid_schedule(c):
         "general_track": (general_track(courses), 0),
         "gened": (fulfills_gen_ed(courses), 0)
     }
-    json_object = json.dumps(ret_val)
-    return json_object
+    return ret_val
     
     # return (enough_credits(courses) and fulfills_gen_ed(courses) and lower_level_math(courses) \
     #     and lower_level_cs(courses) and UL_concentration(courses) \
@@ -729,13 +728,27 @@ if __name__ == '__main__':
     UL_test = ["AREC300", "AREC301", "AREC303", "AREC304"]
     gen_track = [""]
 
-    schedule = [["CMSC131", "CMSC132"]]
+    s = [["ENGL101", "MATH140", "COMM107", "CMSC131", "CMSC100"],
+                ["CMSC132", "MATH141", "PHYS121", "AASP100"],
+                ["CMSC216", "CMSC250", "MATH240", "AMST328X"],
+                ["CMSC330", "CMSC351", "STAT400", "PHYS161", "AASP200"],
+                ["CMSC411", "CMSC412", "CHIN307", "ECON111", "CMSC414"],
+                ["CMSC420", "CMSC451", "ENGL393", "ECON300", "ECON305"],
+                ["CMSC320", "CMSC389N", "ECON306", "ARTH260", "CMSC425"],
+                ["CMSC472", "ECON311", "ECON312", "ECON317", "ECON321"]]
 
     start = time.time()
     # print(lower_level_math(ll_math))
     # print(UL_concentration(UL_test))
     # print(general_track(gen_track))
     #print(fulfills_diversity(diversity_test))
-    print(valid_schedule(schedule))
+    # print(valid_schedule(schedule))
+
+    schedule = [item for sublist in s for item in sublist]
+    print(fulfills_FS(schedule))
+    print(fulfills_DS(schedule))
+    print(fulfills_iseries(schedule))
+    print(fulfills_diversity(schedule))
+
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
