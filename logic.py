@@ -2,6 +2,7 @@ import requests
 import json
 import time
 import mysql.connector
+import copy
 
 # db = mysql.connector.connect(
 #     host="localhost",
@@ -11,26 +12,6 @@ import mysql.connector
 # )
 
 # cursor = db.cursor()
-
-
-dsnl_count = 0
-dsnl = False
-dsns = False
-
-dsns_dssp_count = 0
-dshs_dsns_count = 0
-dshs_dshu_count = 0
-dshs_dssp_count = 0
-dshu_dssp_count = 0
-
-dshs_count = 0
-dshs = False
-
-dshu_count = 0
-dshu = False
-
-dssp_count = 0
-dssp = False
 
 def is_stat_4XX(stat_course):
     if("STAT4" in stat_course):
@@ -67,20 +48,21 @@ def is_math_stat(course):
 
 
 def lower_level_math(courses):
-    if("MATH140" in courses):
-        courses.remove("MATH140")
-        if("MATH141" in courses):
-            courses.remove("MATH141")
-            course_size = len(courses)
+    courses_new = copy.deepcopy(courses)
+    if("MATH140" in courses_new):
+        courses_new.remove("MATH140")
+        if("MATH141" in courses_new):
+            courses_new.remove("MATH141")
+            course_size = len(courses_new)
             if(course_size < 2):
                 return False
-            for c in courses:
+            for c in courses_new:
                 if(is_stat_4XX(c)):
                     # ALL STAT 4XX = 3 credits
-                    courses.remove(c)
+                    courses_new.remove(c)
                     break
             
-            for c in courses:
+            for c in courses_new:
                 #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
 
                 # if(is_math_stat(c) and \
@@ -88,10 +70,10 @@ def lower_level_math(courses):
                 if(is_math_stat(c)):
 
                     # if(requires_140(c) == True):
-                    courses.remove(c)
+                    courses_new.remove(c)
                     break
             
-            return (course_size - len(courses) == 2)
+            return (course_size - len(courses_new) == 2)
     
     return False
 
@@ -111,7 +93,7 @@ def UL_concentration(courses):
     disciplines = set(list(map(get_dept, courses)))
     if("CMSC" in disciplines):
         disciplines.remove("CMSC")
-    print(disciplines)
+    #print(disciplines)
     for subj in disciplines:
         if(meets_UL(courses, subj)):
             return True
@@ -129,7 +111,7 @@ def meets_UL(courses, dept):
             #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
             #UL_credits += cursor.fetchall[0][0]
             UL_credits += 3
-            print(UL_credits)
+            #print(UL_credits)
     
     return UL_credits >= 12
 
@@ -145,25 +127,25 @@ def general_track(courses):
     total_general_courses = systems + info_processing + \
         SE_PL + theory + num_analysis
 
+    courses_new = copy.deepcopy(courses)
     index_list = [0, 0, 0, 0, 0]
-    for i in range(len(courses)-1, -1, -1):
-        print("i: " + str(i))
+    for i in range(len(courses_new)-1, -1, -1):
         c = courses[i]
         if(c in total_general_courses):
             if(c in systems):
-                courses.remove(c)
+                courses_new.remove(c)
                 index_list[0] = index_list[0] + 1
             elif(c in info_processing):
-                courses.remove(c)
+                courses_new.remove(c)
                 index_list[1] = index_list[1] + 1
             elif(c in SE_PL):
-                courses.remove(c)
+                courses_new.remove(c)
                 index_list[2] = index_list[2] + 1
             elif(c in theory):
-                courses.remove(c)
+                courses_new.remove(c)
                 index_list[3] = index_list[3] + 1
             if(c in num_analysis):
-                courses.remove(c)
+                courses_new.remove(c)
                 index_list[4] = index_list[4] + 1
     
     if(sum(index_list) < 5):
@@ -178,14 +160,14 @@ def general_track(courses):
         return False
     
     misc_count = 0
-    for c in courses:
+    for c in courses_new:
         if(c in total_general_courses or (c in misc)):
             misc_count += 1
     
     if(misc_count >= 2):
         return True
     
-    return (False,0)
+    return False
 
 def b_search(course_dict_list, low, high, c):
     if high >= low:
@@ -242,33 +224,31 @@ def fulfills_FS(courses):
     return (fsaw and fspw and fsoc and fsar and fsma)
 
 def fulfills_DS(given_courses):
-    # globals
-    global dsnl_count
-    global dshs_count
-    global dshu_count
-    global dssp_count
-    
-    global dsnl
-    global dsns
-    global dshs
-    global dshu
-    global dssp
+    dsnl_count = 0
+    dsnl = False
+    dsns = False
 
-    global dsns_dssp_count
-    global dshs_dsns_count
-    global dshs_dshu_count
-    global dshu_dssp_count
-    global dshs_dssp_count
+    dsns_dssp_count = 0
+    dshs_dsns_count = 0
+    dshs_dshu_count = 0
+    dshs_dssp_count = 0
+    dshu_dssp_count = 0
 
-    global i_series_count
-    global dvup_count
+    dshs_count = 0
+    dshs = False
+
+    dshu_count = 0
+    dshu = False
+
+    dssp_count = 0
+    dssp = False
 
     with open("202008.json") as file:
         courses_json = json.load(file)
 
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
-        print("course_data" + str(course_data))
+        # print("course_data" + str(course_data))
 
         if(course_data == -1):
             continue
@@ -280,7 +260,6 @@ def fulfills_DS(given_courses):
 
         #DSNL
         if(gen_ed == ["DSNL"]):
-            global dsnl_count
             dsnl_count += int(course_data[1])
 
         elif(gen_ed == ["DSNL", "SCIS"]):
@@ -301,7 +280,7 @@ def fulfills_DS(given_courses):
                     break
             
             if(coreq_taken):
-                print(course_data[1])
+                # print(course_data[1])
                 dsnl_count += (int(course_data[1]) + 1)
                 dsnl = True
             elif("DSNS" in gen_ed[0]):
@@ -594,11 +573,11 @@ def fulfills_DS(given_courses):
                     dshs_count += dshs_dssp_count # MUST give it to dshs
                 dshs_dssp_count = 0
     
-    print("dsnl: " + str(dsnl))
-    print("dsns: " + str(dsns))
-    print("dshs: " + str(dshs))
-    print("dshu: " + str(dshu))
-    print("dssp: " + str(dssp))
+    # print("dsnl: " + str(dsnl))
+    # print("dsns: " + str(dsns))
+    # print("dshs: " + str(dshs))
+    # print("dshu: " + str(dshu))
+    # print("dssp: " + str(dssp))
     
     return (dsnl and dsns and dshu and dshs and dssp)
 
@@ -653,8 +632,7 @@ def fulfills_diversity(given_courses):
     return (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)
 
 def fulfills_gen_ed(courses):
-    return ((fulfills_FS(courses) and fulfills_DS(courses)) and \
-       (fulfills_iseries(courses) and fulfills_diversity(courses)))
+    return fulfills_FS(courses) and fulfills_DS(courses) and fulfills_iseries(courses) and fulfills_diversity(courses)
         
 
 def enough_credits(courses):
@@ -662,6 +640,7 @@ def enough_credits(courses):
     for c in courses:
         credit_sum += 3 # sql stuff
 
+    print("NUM CREDITS: " + str(credit_sum))
     return credit_sum >= 120
 
 def valid_schedule(c):
@@ -769,13 +748,17 @@ if __name__ == '__main__':
     
 
     schedule = [item for sublist in s for item in sublist]
-
+    #print("\n---------\n")
+     #returns true
     print(valid_schedule(schedule))
+    #print(fulfills_gen_ed(schedule))
     # print("Low math: " + str(lower_level_math(schedule)))
     # print("Low cs: " + str(lower_level_cs(schedule)))
     # print("UL: " + str(UL_concentration(schedule)))
     # print("gentrack: " + str(general_track(schedule)))
+
     # print(fulfills_FS(schedule))
+
     # print(fulfills_DS(schedule))
     # print(fulfills_iseries(schedule))
     # print(fulfills_diversity(schedule))
