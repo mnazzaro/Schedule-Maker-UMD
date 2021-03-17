@@ -14,10 +14,7 @@ import copy
 # cursor = db.cursor()
 
 def is_stat_4XX(stat_course):
-    if("STAT4" in stat_course):
-        return True
-    else:
-        return False
+    return ("STAT4" in stat_course)
 
 
 def get_course_range(course):
@@ -644,8 +641,8 @@ def enough_credits(courses):
     return credit_sum >= 120
 
 def valid_schedule(c):
-    #courses = [item for sublist in c for item in sublist]
-    courses = c
+    c = json.loads(c)
+    courses = [item for sublist in c for item in sublist]
     ret_val = {
         "enough_credits": (enough_credits(courses), 0),
         "lower_level_math": (lower_level_math(courses), 0),
@@ -727,7 +724,7 @@ if __name__ == '__main__':
     # }
     
     ll_math = ["MATH140", "MATH141", "STAT400", "MATH241"]
-    UL_test = ["AREC300", "AREC301", "AREC303", "AREC304"]
+    UL_test = ["ECON300 (3)", "ECON315 (3)", "ECON306 (3)", "ECON4990 (3)"]
     gen_track = [""]
 
     s = [["ENGL101", "MATH140", "COMM107", "CMSC131", "CMSC100"],
@@ -748,13 +745,16 @@ if __name__ == '__main__':
     
 
     schedule = [item for sublist in s for item in sublist]
+    
+    #print(valid_schedule(UL_test))
+
     #print("\n---------\n")
      #returns true
-    print(valid_schedule(schedule))
+    
     #print(fulfills_gen_ed(schedule))
     # print("Low math: " + str(lower_level_math(schedule)))
     # print("Low cs: " + str(lower_level_cs(schedule)))
-    # print("UL: " + str(UL_concentration(schedule)))
+    print("UL: " + str(UL_concentration(UL_test)))
     # print("gentrack: " + str(general_track(schedule)))
 
     # print(fulfills_FS(schedule))
