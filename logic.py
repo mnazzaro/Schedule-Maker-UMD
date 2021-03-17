@@ -1,8 +1,17 @@
 import requests
 import json
 import time
+import mysql.connector
 
-fsaw, fspw, fsoc, fsma, fsar, fsar_ma = False, False, False, False, False, False
+# db = mysql.connector.connect(
+#     host="localhost",
+#     username="root",
+#     password="UMD100",
+#     database="schedule-maker-umd"
+# )
+
+# cursor = db.cursor()
+
 
 dsnl_count = 0
 dsnl = False
@@ -22,14 +31,6 @@ dshu = False
 
 dssp_count = 0
 dssp = False
-
-
-
-i_series_count = 0
-i_series = False
-
-dvup_count = 0
-diversity = False
 
 def is_stat_4XX(stat_course):
     if("STAT4" in stat_course):
@@ -67,54 +68,49 @@ def is_math_stat(course):
 
 def lower_level_math(courses):
     if("MATH140" in courses):
-        courses.pop("MATH140", None)
+        courses.remove("MATH140")
         if("MATH141" in courses):
-            courses.pop("MATH141")
+            courses.remove("MATH141")
             course_size = len(courses)
             if(course_size < 2):
                 return False
-            for c in list(courses):
+            for c in courses:
                 if(is_stat_4XX(c)):
                     # ALL STAT 4XX = 3 credits
-                    courses.pop(c)
+                    courses.remove(c)
                     break
             
-            for c in list(courses):
-                if(is_math_stat(c) and \
-                    (courses.get(c) == 3 or courses.get(c) == 4)):
+            for c in courses:
+                #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
+
+                # if(is_math_stat(c) and \
+                #     (cursor.fetchall[0][0] == 3 or cursor.fetchall[0][0] == 4)):
+                if(is_math_stat(c)):
 
                     # if(requires_140(c) == True):
-                    courses.pop(c)
+                    courses.remove(c)
                     break
             
-            if(course_size - len(courses) == 2):
-                return True
-            else:
-                return False
+            return (course_size - len(courses) == 2)
     
     return False
 
 
 def lower_level_cs(courses):
-    lower_level_reqs = {
-        "CMSC132": 4,
-        "CMSC216": 4,
-        "CMSC250": 4,
-        "CMSC330": 3,
-        "CMSC351": 3
-    }
+    lower_level_reqs = ["CMSC132", "CMSC216", "CMSC250", \
+        "CMSC330", "CMSC351"]
+
     if("CMSC131" in courses or "CMSC133" in courses):
-        if(lower_level_reqs.items() <= courses.items()):
+        if(set(lower_level_reqs) <= set(courses)):
             return True
     
     return False
 
 
 def UL_concentration(courses):
-    disciplines = list(courses)
-    disciplines = list(map(get_dept, disciplines))
-    disciplines = set(disciplines)
-    disciplines.remove("CMSC")
+    disciplines = set(list(map(get_dept, courses)))
+    if("CMSC" in disciplines):
+        disciplines.remove("CMSC")
     print(disciplines)
     for subj in disciplines:
         if(meets_UL(courses, subj)):
@@ -125,12 +121,14 @@ def UL_concentration(courses):
 
 def meets_UL(courses, dept):
     UL_credits = 0
-    for c in list(courses):
+    for c in courses:
         course_range = get_course_range(c)
         if(get_dept(c) == dept and \
                 (course_range >= 300 and course_range < 500)):
             
-            UL_credits += courses[c]
+            #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
+            #UL_credits += cursor.fetchall[0][0]
+            UL_credits += 3
             print(UL_credits)
     
     return UL_credits >= 12
@@ -148,22 +146,24 @@ def general_track(courses):
         SE_PL + theory + num_analysis
 
     index_list = [0, 0, 0, 0, 0]
-    for c in list(courses):
+    for i in range(len(courses)-1, -1, -1):
+        print("i: " + str(i))
+        c = courses[i]
         if(c in total_general_courses):
             if(c in systems):
-                courses.pop(c)
+                courses.remove(c)
                 index_list[0] = index_list[0] + 1
             elif(c in info_processing):
-                courses.pop(c)
+                courses.remove(c)
                 index_list[1] = index_list[1] + 1
             elif(c in SE_PL):
-                courses.pop(c)
+                courses.remove(c)
                 index_list[2] = index_list[2] + 1
             elif(c in theory):
-                courses.pop(c)
+                courses.remove(c)
                 index_list[3] = index_list[3] + 1
             if(c in num_analysis):
-                courses.pop(c)
+                courses.remove(c)
                 index_list[4] = index_list[4] + 1
     
     if(sum(index_list) < 5):
@@ -178,8 +178,8 @@ def general_track(courses):
         return False
     
     misc_count = 0
-    for c in list(courses):
-        if(c in total_general_courses or c in misc):
+    for c in courses:
+        if(c in total_general_courses or (c in misc)):
             misc_count += 1
     
     if(misc_count >= 2):
@@ -206,19 +206,14 @@ def b_search(course_dict_list, low, high, c):
         return -1
 
 def fulfills_FS(courses):
-    
-    
+    fsaw, fspw, fsoc, fsma, fsar = False, False, False, False, False
+
     with open("202008.json") as file:
         courses_json = json.load(file)
     
-    for c in list(courses):
-        # response_str = "https://api.umd.io/v1/courses/{course}?semester=202101".format(course = c)
-        # response = requests.get(response_str)
-        # if(response.status_code == 200):
-        #     course_data = json.loads(response.text)[0]
-        #     try:
+    for c in courses:
         gen_ed = b_search(courses_json, 0, len(courses_json), c)[0]
-        #gen_ed = course_data["gen_ed"][0]
+
         if(gen_ed == ["FSAW"]):
             fsaw = True
         elif(gen_ed == ["FSPW"]):
@@ -234,12 +229,9 @@ def fulfills_FS(courses):
             fsma = True
 
 
-    if(fsaw and fspw and fsoc and fsar and fsma):
-        return True
-    else:
-        return False
+    return (fsaw and fspw and fsoc and fsar and fsma)
 
-def fulfills_DS(courses):
+def fulfills_DS(given_courses):
     # globals
     global dsnl_count
     global dshs_count
@@ -264,7 +256,6 @@ def fulfills_DS(courses):
     with open("202008.json") as file:
         courses_json = json.load(file)
 
-    given_courses = list(courses)
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
         gen_ed = course_data[0]
@@ -279,11 +270,11 @@ def fulfills_DS(courses):
 
         elif(gen_ed == ["DSNL", "SCIS"]):
             dsnl_count += int(course_data[1])
-            i_series_count += int(course_data[1])
+            # i_series_count += int(course_data[1])
 
         elif(gen_ed == ["DSNL", "DVUP"]):
             dsnl_count += int(course_data[1])
-            dvup_count += int(course_data[1])
+            # dvup_count += int(course_data[1])
 
         elif(len(gen_ed) > 0 and "DSNL(fkwh" in gen_ed[0]):
             coreq = gen_ed[0][ 9:gen_ed[0].index(")") ]
@@ -301,13 +292,13 @@ def fulfills_DS(courses):
             elif("DSNS" in gen_ed[0]):
                 dsns = True
         
-        if(len(gen_ed) == 2 and gen_ed[1] == "SCIS"):
-            i_series_count += int(course_data[1])
-        elif(len(gen_ed) == 2 and gen_ed[1] == "DVUP"):
-            dvup_count += int(course_data[1])
-        elif(len(gen_ed) == 3 and gen_ed[1] == "DVUP" and gen_ed[2] == "SCIS"):
-            dvup_count += int(course_data[1])
-            i_series_count += int(course_data[1])
+        # if(len(gen_ed) == 2 and gen_ed[1] == "SCIS"):
+        #     i_series_count += int(course_data[1])
+        # elif(len(gen_ed) == 2 and gen_ed[1] == "DVUP"):
+        #     dvup_count += int(course_data[1])
+        # elif(len(gen_ed) == 3 and gen_ed[1] == "DVUP" and gen_ed[2] == "SCIS"):
+        #     dvup_count += int(course_data[1])
+        #     i_series_count += int(course_data[1])
 
         # DSNS
         if(gen_ed[0] == "DSNS"):
@@ -596,13 +587,12 @@ def fulfills_DS(courses):
     
     return (dsnl and dsns and dshu and dshs and dssp)
 
-def fulfills_iseries(courses):
-    global i_series_count
+def fulfills_iseries(given_courses):
+    i_series_count = 0
 
     with open("202008.json") as file:
         courses_json = json.load(file)
 
-    given_courses = list(courses)
     for c in given_courses:
         course_data = b_search(courses_json, 0, len(courses_json), c)
         gen_ed = course_data[0]
@@ -619,10 +609,44 @@ def fulfills_iseries(courses):
     
     return (i_series_count >= 6)
 
-# def fulfills_gen_ed(courses):
-#     if((fulfills_FS(courses) and fulfills_DS(courses)) and \
-#        (fulfills_iseries(courses) and fulfills_diversity(courses))):
-#         return True
+def fulfills_diversity(given_courses):
+    dvup_count = 0
+    dvcc_count = 0
+
+    with open("202008.json") as file:
+        courses_json = json.load(file)
+
+    for c in given_courses:
+        course_data = b_search(courses_json, 0, len(courses_json), c)
+        gen_ed = course_data[0]
+
+        if(len(gen_ed) == 0):
+            continue
+        
+        if("DVUP" in gen_ed):
+            dvup_count += int(course_data[1])
+        if("DVCC" in gen_ed):
+            dvcc_count += int(course_data[1])
+    
+    return (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)
+
+def fulfills_gen_ed(courses):
+    return ((fulfills_FS(courses) and fulfills_DS(courses)) and \
+       (fulfills_iseries(courses) and fulfills_diversity(courses)))
+        
+
+def enough_credits(courses):
+    credit_sum = 0
+    for c in courses:
+        credit_sum += 3 # sql stuff
+
+    return credit_sum >= 120
+
+def valid_schedule(c):
+    courses = [item for sublist in c for item in sublist]
+    return (enough_credits(courses) and fulfills_gen_ed(courses) and lower_level_math(courses) \
+        and lower_level_cs(courses) and UL_concentration(courses) \
+            and general_track(courses))
 
 
 if __name__ == '__main__':
@@ -661,32 +685,46 @@ if __name__ == '__main__':
     #     "ART405": 4,
     # }
 
-    ds_test_set_1 = {
-        "AASP200": 3,
-        "PLCY100": 3,
-        "CCJS225": 3,
-        "BSOS201": 3,
-        "ARHU275": 3,
-        "AREC200": 3,
-        "PHYS260": 1,
-        "PHYS261": 3,
-        "PHIL220": 3
-    }
+    # ds_test_set_1 = {
+    #     "AASP200": 3,
+    #     "PLCY100": 3,
+    #     "CCJS225": 3,
+    #     "BSOS201": 3,
+    #     "ARHU275": 3,
+    #     "AREC200": 3,
+    #     "PHYS260": 1,
+    #     "PHYS261": 3,
+    #     "PHIL220": 3
+    # }
 
     ds_test_set_2 = {
         "AREC200": 3, #DSNS or DSSP --> DSNS
         "ARHU275": 3, #DSHU or DSSP --> DSSP
         "ARHU319A": 3, #DSHU or DSSP --> DSSP
-        "ARTH200": 3, #DSHU         --> DSHU
+        "ENGL233": 3, #DSHU         --> DSHU
         "CLAS312": 3, #DSHS or DSHU  --> DSHU
-        "AGST130": 3, #DSHS         --> DSHS
+        "ANTH266": 3, #DSHS         --> DSHS
         "FMSC302": 3, #DSHS or DSSP --> DSHS
         "AOSC200": 3,
         "AOSC201": 3
     }
 
+    # diversity_test = {
+    #     "FMSC110S": 3, #dvcc
+    #     "AASP100": 3 # dvup
+    # }
+    
+    ll_math = ["MATH140", "MATH141", "STAT400", "MATH241"]
+    UL_test = ["AREC300", "AREC301", "AREC303", "AREC304"]
+    gen_track = [""]
+
+    schedule = [["CMSC131"]]
+
     start = time.time()
-    print(fulfills_DS(ds_test_set_2))
-    print(fulfills_iseries(ds_test_set_2))
+    # print(lower_level_math(ll_math))
+    # print(UL_concentration(UL_test))
+    # print(general_track(gen_track))
+    #print(fulfills_diversity(diversity_test))
+    print(valid_schedule(schedule))
     end = time.time()
     print("Elapsed Time: {time}".format(time = end - start))
