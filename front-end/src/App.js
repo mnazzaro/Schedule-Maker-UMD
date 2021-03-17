@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import TableItem from './TableItem.js';
+import Warnings from './Warnings.js';
 
 //  Main component. Contains a controlled state form containing a table of TableItems
 class App extends React.Component {
@@ -8,7 +9,15 @@ class App extends React.Component {
     //  Courses is a list of 8 lists, each with (currently) empty classes, which are strings
     constructor(props) {
         super(props);
-        this.state = {courses: (new Array(8)).fill(new Array(10).fill(""))}
+        this.state = {
+            courses: (new Array(8)).fill(new Array(10).fill("")),
+            enough_credits: "",
+            lower_level_math: "",
+            lower_level_cs: "",
+            upper_level_concentration: "",
+            general_track: "",
+            gened: "",
+        }
     }
     
     //  The loops generate the table rows and columns. The TableItem name prop is a string identifier formatted as two integers
@@ -24,24 +33,30 @@ class App extends React.Component {
             table.push(<tr key={i}>{tr}</tr>)
         }
         return (
-            <form onSubmit={this.handleSubmit}>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Fall Semester 1</th>
-                            <th>Spring Semester 1</th>
-                            <th>Fall Semester 2</th>
-                            <th>Spring Semester 2</th>
-                            <th>Fall Semester 3</th>
-                            <th>Spring Semester 3</th>
-                            <th>Fall Semester 4</th>
-                            <th>Spring Semester 4</th>
-                        </tr>
-                        {table}
-                    </tbody>
-                </table>
-                <input id="submit" type="submit" value="Check Schedule"/> 
-            </form>
+            <div className="main-container">
+                <form onSubmit={this.handleSubmit}>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th>Fall Semester 1</th>
+                                <th>Spring Semester 1</th>
+                                <th>Fall Semester 2</th>
+                                <th>Spring Semester 2</th>
+                                <th>Fall Semester 3</th>
+                                <th>Spring Semester 3</th>
+                                <th>Fall Semester 4</th>
+                                <th>Spring Semester 4</th>
+                            </tr>
+                            {table}
+                        </tbody>
+                    </table>
+                    <input id="submit" type="submit" value="Check Schedule"/> 
+                </form>
+                <Warnings enough_credits={this.state.enough_credits} 
+                    lower_level_math={this.state.lower_level_math} lower_level_cs={this.state.lower_level_cs}
+                    upper_level_concentration={this.state.upper_level_concentration} general_track={this.state.general_track}
+                    gened={this.state.gened}/>
+            </div>
         );
     }
 
@@ -50,6 +65,7 @@ class App extends React.Component {
         event.preventDefault();
         let json = await this.runScheduleCheck();
         console.log(json);
+        this.setState(json);
     }
 
     //  This method actually submits a post request to the back end with the table data (gathered from the this.state.courses)

@@ -1,7 +1,13 @@
-form {
+
+.main-container {
     position: relative;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
+
 
 table, th, td {
     border: 1px solid gray;
@@ -10,7 +16,6 @@ table, th, td {
 
 table {
     position: relative;
-    margin: 0 auto;
     top: 50px;
 }
 
@@ -53,13 +58,27 @@ input {
 
 #submit {
     position: relative;
-    height: 80px;
-    width: 600px;
+    height: 40px;
+    width: 60%;
     top: 80px;
     background-color: rgb(50, 182, 50);
     font-size: larger;
-    border-radius: 10px;
+    border-radius: 4px;
     outline: none;
 }
 
 #submit:hover {background-color: rgb(49, 211, 49)}
+
+.warnings-container {
+    position: relative;
+    top: 200px;
+    display: flex;
+    flex-direction:row;
+    flex-wrap: wrap;
+    width: auto;
+}
+
+.warning {
+    width: 200px;
+    height: 20px;
+}

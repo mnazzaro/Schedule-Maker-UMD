@@ -27,7 +27,7 @@ def search_courses ():
 
 @app.route("/run_schedule", methods=["POST"])
 def run_schedule ():
-    return logic.check_schedule(json.loads(request.data))
+    return logic.valid_schedule(json.loads(request.data))
 
 if __name__ == "__main__":
     app.run(debug=True, port=3001)
