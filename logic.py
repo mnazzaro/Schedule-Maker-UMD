@@ -641,7 +641,6 @@ def enough_credits(courses):
     return credit_sum >= 120
 
 def valid_schedule(c):
-    c = json.loads(c)
     courses = [item for sublist in c for item in sublist]
     ret_val = {
         "enough_credits": (enough_credits(courses), 0),
