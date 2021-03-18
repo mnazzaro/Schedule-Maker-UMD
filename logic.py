@@ -651,6 +651,11 @@ def fulfills_diversity(given_courses, cursor):
         return False, "False"
 
 def fulfills_gen_ed(courses, cursor):
+    print(f"fulfills_FS: {fulfills_FS(courses, cursor)[0]}")
+    print(f"fulfills_DS: {fulfills_DS(courses, cursor)[0]}")
+    print(f"fulfills_iseries: {fulfills_iseries(courses, cursor)[0]}")
+    print(f"fulfills_diversity: {fulfills_diversity(courses, cursor)[0]}")
+
     if( (fulfills_FS(courses, cursor)[0] and fulfills_DS(courses, cursor)[0] and fulfills_iseries(courses, cursor)[0] and fulfills_diversity(courses, cursor)[0])):
         return True, ""
     else:
