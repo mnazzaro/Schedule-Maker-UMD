@@ -660,7 +660,8 @@ def fulfills_gen_ed(courses):
 def enough_credits(courses):
     credit_sum = 0
     for c in courses:
-        credit_sum += 3 # sql stuff
+        if c != "":
+            credit_sum += 3 # sql stuff
 
     print("NUM CREDITS: " + str(credit_sum))
     if(credit_sum >= 120):
@@ -676,6 +677,7 @@ def valid_schedule(c):
         # Don't flatten
         courses = c
 
+    print (courses)
     ret_val = {
         "enough_credits": enough_credits(courses)[1],
         "lower_level_math": lower_level_math(courses)[1],
