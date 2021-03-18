@@ -2,32 +2,36 @@ from flask import Flask
 from flask import request
 from flask import jsonify
 
-import mysql.connector
+import pyodbc
 import requests
 import json
 
 import logic
 
-db = mysql.connector.connect(
-    host="localhost",
-    username="root",
-    password="UMD100",
-    database="schedule-maker-umd"
-)
+server = 'schedule-maker.database.windows.net'
+database = 'ScheduleMaker'
+username = 'Mark'
+password = 'UMD100!!'   
+driver= '{ODBC Driver 17 for SQL Server}'
+
+db = pyodbc.connect('DRIVER='+driver+';SERVER='+server+';PORT=1433;DATABASE='+database+';UID='+username+';PWD='+ password)
 
 cursor = db.cursor()
+cursor.fast_executemany = True
 
 app = Flask (__name__)
 
 @app.route("/search_courses", methods=["GET"])
 def search_courses ():
-    cursor.execute("SELECT course_id, credits FROM courses WHERE course_id LIKE %s", (request.args.get('letters')+'%',))
-    results = cursor.fetchall()
-    return jsonify(results[0:3])
+    #try:
+        results = cursor.execute("SELECT TOP 3 course_id, credits FROM courses WHERE course_id LIKE ?", request.args.get('letters')+'%').fetchall()
+        x = list(map(lambda x: list(x), list(results)))
+        return jsonify(x)
+    
 
 @app.route("/run_schedule", methods=["POST"])
 def run_schedule ():
-    return logic.valid_schedule(json.loads(request.data))
+    return logic.valid_schedule(json.loads(request.data), cursor)
 
 if __name__ == "__main__":
     app.run(debug=True, port=3001)

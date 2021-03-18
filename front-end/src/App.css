@@ -75,7 +75,8 @@ input {
     display: flex;
     flex-direction:row;
     flex-wrap: wrap;
-    width: auto;
+    width: 80%;
+    justify-content: space-between;
 }
 
 .warning {

@@ -46,6 +46,7 @@ def is_math_stat(course):
 
 def lower_level_math(courses):
     courses_new = copy.deepcopy(courses)
+    courses_new = list(map(lambda x: x.split(" ")[0], courses_new))
     if("MATH140" in courses_new):
         courses_new.remove("MATH140")
         if("MATH141" in courses_new):
@@ -82,26 +83,31 @@ def lower_level_cs(courses):
     lower_level_reqs = ["CMSC132", "CMSC216", "CMSC250", \
         "CMSC330", "CMSC351"]
 
-    if("CMSC131" in courses or "CMSC133" in courses):
-        if(set(lower_level_reqs) <= set(courses)):
+    courses_new = copy.deepcopy(courses)
+    courses_new = list(map(lambda x: x.split(" ")[0], courses_new))
+    if("CMSC131" in courses_new or "CMSC133" in courses_new):
+        if(set(lower_level_reqs) <= set(courses_new)):
             return True, ""
     
     return False, "False"
 
 
-def UL_concentration(courses):
+def UL_concentration(courses, cursor):
     disciplines = set(list(map(get_dept, courses)))
+    print (disciplines)
     if("CMSC" in disciplines):
         disciplines.remove("CMSC")
     #print(disciplines)
-    for subj in disciplines:
-        if(meets_UL(courses, subj)):
+    for subj in list(disciplines):
+        print (subj)
+        if(meets_UL(courses, subj, cursor)):
             return True, ""
     
     return False, "False"
 
 
-def meets_UL(courses, dept):
+def meets_UL(courses, dept, cursor):
+    print (dept)
     UL_credits = 0
     for c in courses:
         course_range = get_course_range(c)
@@ -110,9 +116,12 @@ def meets_UL(courses, dept):
             
             #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
             #UL_credits += cursor.fetchall[0][0]
-            UL_credits += 3
-            #print(UL_credits)
-    
+            num_credits = cursor.execute("SELECT credits FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+            if num_credits:
+                num_credits = num_credits[0]
+            else:
+                num_credits = 0
+            UL_credits += num_credits    
     if(UL_credits >= 12):
         return True, ""
     else:
@@ -131,6 +140,8 @@ def general_track(courses):
         SE_PL + theory + num_analysis
 
     courses_new = copy.deepcopy(courses)
+    courses_new = list(map(lambda x: x.split(" ")[0], courses_new))
+    print (f"COURSES: {courses_new}")
     index_list = [0, 0, 0, 0, 0]
     for i in range(len(courses_new)-1, -1, -1):
         c = courses[i]
@@ -194,24 +205,22 @@ def b_search(course_dict_list, low, high, c):
         # Element is not present in the array
         return -1
 
-def fulfills_FS(courses):
+def fulfills_FS(courses, cursor):
     fsaw, fspw, fsoc, fsma, fsar = (False, ""), \
                                    (False, ""), \
                                    (False, ""), \
                                    (False, ""), \
                                    (False, "")
-
-    with open("202008.json") as file:
-        courses_json = json.load(file)
     
     for c in courses:
         #print(b_search(courses_json, 0, len(courses_json), c)[0])
 
-        gen_ed = b_search(courses_json, 0, len(courses_json), c)
-        if(gen_ed == -1):
+        gen_ed = cursor.execute("SELECT gened FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if(gen_ed):
+            gen_ed = gen_ed[0]
+        else: 
             continue
         
-        gen_ed = gen_ed[0]
 
         if(gen_ed == ["FSAW"]):
             fsaw = True, ""
@@ -233,7 +242,7 @@ def fulfills_FS(courses):
     else:
         return False, "False"
 
-def fulfills_DS(given_courses):
+def fulfills_DS(given_courses, cursor):
     dsnl_count = 0
     dsnl = False
     dsns = False
@@ -253,17 +262,13 @@ def fulfills_DS(given_courses):
     dssp_count = 0
     dssp = False
 
-    with open("202008.json") as file:
-        courses_json = json.load(file)
-
     for c in given_courses:
-        course_data = b_search(courses_json, 0, len(courses_json), c)
-        # print("course_data" + str(course_data))
-
-        if(course_data == -1):
+        course_data = cursor.execute("SELECT gened FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if(course_data):
+            gen_ed = course_data[0]
+        else: 
             continue
 
-        gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
             continue
@@ -594,18 +599,15 @@ def fulfills_DS(given_courses):
     else:
         return False, "False"
 
-def fulfills_iseries(given_courses):
+def fulfills_iseries(given_courses, cursor):
     i_series_count = 0
 
-    with open("202008.json") as file:
-        courses_json = json.load(file)
-
     for c in given_courses:
-        course_data = b_search(courses_json, 0, len(courses_json), c)
-        if(course_data == -1):
+        course_data = cursor.execute("SELECT gened FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if(course_data):
+            gen_ed = course_data[0]
+        else: 
             continue
-
-        gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
             continue
@@ -626,16 +628,12 @@ def fulfills_diversity(given_courses):
     dvup_count = 0
     dvcc_count = 0
 
-    with open("202008.json") as file:
-        courses_json = json.load(file)
-
     for c in given_courses:
-        course_data = b_search(courses_json, 0, len(courses_json), c)
-
-        if(course_data == -1):
+        course_data = cursor.execute("SELECT gened FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if(course_data):
+            gen_ed = course_data[0]
+        else: 
             continue
-
-        gen_ed = course_data[0]
 
         if(len(gen_ed) == 0):
             continue
@@ -650,18 +648,23 @@ def fulfills_diversity(given_courses):
     else:
         return False, "False"
 
-def fulfills_gen_ed(courses):
-    if( (fulfills_FS(courses)[0] and fulfills_DS(courses)[0] and fulfills_iseries(courses)[0] and fulfills_diversity(courses)[0])):
+def fulfills_gen_ed(courses, cursor):
+    if( (fulfills_FS(courses, cursor)[0] and fulfills_DS(courses, cursor)[0] and fulfills_iseries(courses, cursor)[0] and fulfills_diversity(courses, cursor)[0])):
         return True, ""
     else:
         return False, "False"
         
 
-def enough_credits(courses):
+def enough_credits(courses, cursor):
     credit_sum = 0
     for c in courses:
         if c != "":
-            credit_sum += 3 # sql stuff
+            num_credits = cursor.execute("SELECT credits FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+            if num_credits:
+                num_credits = num_credits[0]
+            else: 
+                num_credits = 0
+            credit_sum += num_credits # sql stuff
 
     print("NUM CREDITS: " + str(credit_sum))
     if(credit_sum >= 120):
@@ -669,7 +672,7 @@ def enough_credits(courses):
     else:
         return False, "False"
 
-def valid_schedule(c):
+def valid_schedule(c, cursor):
     if(isinstance(c[0], list)):
         # Flatten
         courses = [item for sublist in c for item in sublist]
@@ -679,12 +682,12 @@ def valid_schedule(c):
 
     print (courses)
     ret_val = {
-        "enough_credits": enough_credits(courses)[1],
+        "enough_credits": enough_credits(courses, cursor)[1],
         "lower_level_math": lower_level_math(courses)[1],
         "lower_level_cs": lower_level_cs(courses)[1],
-        "upper_level": UL_concentration(courses)[1],
+        "upper_level": UL_concentration(courses, cursor)[1],
         "general_track": general_track(courses)[1],
-        "gened": fulfills_gen_ed(courses)[1]
+        "gened": fulfills_gen_ed(courses, cursor)[1]
     }
     return ret_val
     
@@ -713,7 +716,7 @@ if __name__ == '__main__':
     # print(general_track(gen_track))
     #print(fulfills_diversity(diversity_test))
     
-    print(valid_schedule(s))
+    #print(valid_schedule(s, cursor))
 
     #schedule = [item for sublist in s for item in sublist]
 
