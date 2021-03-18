@@ -673,6 +673,7 @@ def enough_credits(courses, cursor):
         return False, "False"
 
 def valid_schedule(c, cursor):
+    c = list(filter(lambda a: a != '', c))
     if(isinstance(c[0], list)):
         # Flatten
         courses = [item for sublist in c for item in sublist]
