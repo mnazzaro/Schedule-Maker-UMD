@@ -72,7 +72,7 @@ def lower_level_math(courses):
             
             return (course_size - len(courses_new) == 2)
     
-    return False
+    return False, "False"
 
 
 def lower_level_cs(courses):
@@ -81,9 +81,9 @@ def lower_level_cs(courses):
 
     if("CMSC131" in courses or "CMSC133" in courses):
         if(set(lower_level_reqs) <= set(courses)):
-            return True
+            return True, ""
     
-    return False
+    return False, "False"
 
 
 def UL_concentration(courses):
@@ -93,9 +93,9 @@ def UL_concentration(courses):
     #print(disciplines)
     for subj in disciplines:
         if(meets_UL(courses, subj)):
-            return True
+            return True, ""
     
-    return False
+    return False, "False"
 
 
 def meets_UL(courses, dept):
@@ -110,7 +110,10 @@ def meets_UL(courses, dept):
             UL_credits += 3
             #print(UL_credits)
     
-    return UL_credits >= 12
+    if(UL_credits >= 12):
+        return True, ""
+    else:
+        return False, "False"
 
 
 def general_track(courses):
@@ -146,7 +149,7 @@ def general_track(courses):
                 index_list[4] = index_list[4] + 1
     
     if(sum(index_list) < 5):
-        return False
+        return False, "False"
     
     zero_count = 0
     for i in index_list:
@@ -154,7 +157,7 @@ def general_track(courses):
             zero_count += 1
     
     if(zero_count > 2):
-        return False
+        return False, "False"
     
     misc_count = 0
     for c in courses_new:
@@ -162,9 +165,9 @@ def general_track(courses):
             misc_count += 1
     
     if(misc_count >= 2):
-        return True
+        return True, ""
     
-    return False
+    return False, "False"
 
 def b_search(course_dict_list, low, high, c):
     if high >= low:
@@ -204,21 +207,24 @@ def fulfills_FS(courses):
         gen_ed = gen_ed[0]
 
         if(gen_ed == ["FSAW"]):
-            fsaw = True
+            fsaw = True, ""
         elif(gen_ed == ["FSPW"]):
-            fspw = True
+            fspw = True, ""
         elif(gen_ed == ["FSOC"]):
-            fsoc = True
+            fsoc = True, ""
         elif(gen_ed == ["FSAR", "FSMA"]):
-            fsar = True
-            fsma = True
+            fsar = True, ""
+            fsma = True, ""
         elif(gen_ed == ["FSAR"]):
-            fsar = True
+            fsar = True, ""
         elif(gen_ed == ["FSMA"]):
-            fsma = True
+            fsma = True, ""
 
 
-    return (fsaw and fspw and fsoc and fsar and fsma)
+    if((fsaw and fspw and fsoc and fsar and fsma) is True):
+        return True, ""
+    else:
+        return False, "False"
 
 def fulfills_DS(given_courses):
     dsnl_count = 0
@@ -576,7 +582,10 @@ def fulfills_DS(given_courses):
     # print("dshu: " + str(dshu))
     # print("dssp: " + str(dssp))
     
-    return (dsnl and dsns and dshu and dshs and dssp)
+    if( (dsnl and dsns and dshu and dshs and dssp) is True):
+        return True, ""
+    else:
+        return False, "False"
 
 def fulfills_iseries(given_courses):
     i_series_count = 0
@@ -601,7 +610,10 @@ def fulfills_iseries(given_courses):
         elif(len(gen_ed) >= 3 and gen_ed[2] == "SCIS"):
             i_series_count += int(course_data[1])
     
-    return (i_series_count >= 6)
+    if( (i_series_count >= 6) is True):
+        return True, ""
+    else:
+        return False, "False"
 
 def fulfills_diversity(given_courses):
     dvup_count = 0
@@ -626,10 +638,16 @@ def fulfills_diversity(given_courses):
         if("DVCC" in gen_ed):
             dvcc_count += int(course_data[1])
     
-    return (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)
+    if( (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)):
+        return True, ""
+    else:
+        return False, "False"
 
 def fulfills_gen_ed(courses):
-    return fulfills_FS(courses) and fulfills_DS(courses) and fulfills_iseries(courses) and fulfills_diversity(courses)
+    if( (fulfills_FS(courses)[0] and fulfills_DS(courses)[0] and fulfills_iseries(courses)[0] and fulfills_diversity(courses)[0])):
+        return True, ""
+    else:
+        return False, "False"
         
 
 def enough_credits(courses):
@@ -638,18 +656,20 @@ def enough_credits(courses):
         credit_sum += 3 # sql stuff
 
     print("NUM CREDITS: " + str(credit_sum))
-    return credit_sum >= 120
+    if(credit_sum >= 120):
+        return True, ""
+    else:
+        return False, "False"
 
 def valid_schedule(c):
-    c = json.loads(c)
     courses = [item for sublist in c for item in sublist]
     ret_val = {
-        "enough_credits": (enough_credits(courses), 0),
-        "lower_level_math": (lower_level_math(courses), 0),
-        "lower_level_cs": (lower_level_cs(courses), 0),
-        "upper_level": (UL_concentration(courses), 0),
-        "general_track": (general_track(courses), 0),
-        "gened": (fulfills_gen_ed(courses), 0)
+        "enough_credits": (enough_credits(courses)[1], 0),
+        "lower_level_math": (lower_level_math(courses)[1], 0),
+        "lower_level_cs": (lower_level_cs(courses)[1], 0),
+        "upper_level": (UL_concentration(courses)[1], 0),
+        "general_track": (general_track(courses)[1], 0),
+        "gened": (fulfills_gen_ed(courses)[1], 0)
     }
     return ret_val
     
@@ -658,71 +678,7 @@ def valid_schedule(c):
     #         and general_track(courses))
 
 
-if __name__ == '__main__':
-
-    # gen_eds_fs = {
-    #     "ENGL101": 3,
-    #     "ENGL393": 3,
-    #     "COMM107": 3,
-    #     "MATH140": 4,
-    #     "BIOM301": 3
-    # }
-    # c_advanced = {
-    #     "CMSC411": 3,
-    #     "CMSC412": 3,
-    #     "CMSC414": 3,
-    #     "CMSC430": 3,
-    #     "CMSC466": 3, 
-    #     "CMSC454": 3, 
-    #     "CMSC425": 3    
-    # }
-
-    # c = {
-    #     "MATH140": 4,
-    #     "MATH141": 4,
-    #     "STAT410": 3,
-    #     "MATH161": 3, 
-    #     "CMSC131": 4,
-    #     "CMSC132": 4,
-    #     "CMSC216": 4,
-    #     "CMSC250": 4,
-    #     "CMSC330": 3,
-    #     "CMSC351": 3,
-    #     "CMSC401": 3,
-    #     "CMSC402": 3,
-    #     "ART403": 3,
-    #     "ART405": 4,
-    # }
-
-    # ds_test_set_1 = {
-    #     "AASP200": 3,
-    #     "PLCY100": 3,
-    #     "CCJS225": 3,
-    #     "BSOS201": 3,
-    #     "ARHU275": 3,
-    #     "AREC200": 3,
-    #     "PHYS260": 1,
-    #     "PHYS261": 3,
-    #     "PHIL220": 3
-    # }
-
-    ds_test_set_2 = {
-        "AREC200": 3, #DSNS or DSSP --> DSNS
-        "ARHU275": 3, #DSHU or DSSP --> DSSP
-        "ARHU319A": 3, #DSHU or DSSP --> DSSP
-        "ENGL233": 3, #DSHU         --> DSHU
-        "CLAS312": 3, #DSHS or DSHU  --> DSHU
-        "ANTH266": 3, #DSHS         --> DSHS
-        "FMSC302": 3, #DSHS or DSSP --> DSHS
-        "AOSC200": 3,
-        "AOSC201": 3
-    }
-
-    # diversity_test = {
-    #     "FMSC110S": 3, #dvcc
-    #     "AASP100": 3 # dvup
-    # }
-    
+if __name__ == '__main__': 
     ll_math = ["MATH140", "MATH141", "STAT400", "MATH241"]
     UL_test = ["ECON300 (3)", "ECON315 (3)", "ECON306 (3)", "ECON4990 (3)"]
     gen_track = [""]
@@ -742,11 +698,11 @@ if __name__ == '__main__':
     # print(general_track(gen_track))
     #print(fulfills_diversity(diversity_test))
     
-    
+    print(valid_schedule(UL_test))
 
     schedule = [item for sublist in s for item in sublist]
+    print(enough_credits(UL_test))
     
-    #print(valid_schedule(UL_test))
 
     #print("\n---------\n")
      #returns true
@@ -754,7 +710,7 @@ if __name__ == '__main__':
     #print(fulfills_gen_ed(schedule))
     # print("Low math: " + str(lower_level_math(schedule)))
     # print("Low cs: " + str(lower_level_cs(schedule)))
-    print("UL: " + str(UL_concentration(UL_test)))
+    #print("UL: " + str(UL_concentration(UL_test)))
     # print("gentrack: " + str(general_track(schedule)))
 
     # print(fulfills_FS(schedule))
