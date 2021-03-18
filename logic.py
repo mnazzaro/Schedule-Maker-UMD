@@ -162,6 +162,7 @@ def general_track(courses):
                 courses_new.remove(c)
                 index_list[4] = index_list[4] + 1
     
+    print (f"INDEX LIST: {index_list}")
     if(sum(index_list) < 5):
         return False, "False"
     
@@ -624,7 +625,7 @@ def fulfills_iseries(given_courses, cursor):
     else:
         return False, "False"
 
-def fulfills_diversity(given_courses):
+def fulfills_diversity(given_courses, cursor):
     dvup_count = 0
     dvcc_count = 0
 
@@ -701,7 +702,7 @@ def valid_schedule(c, cursor):
 if __name__ == '__main__': 
     ll_math = ["MATH140", "MATH141", "STAT400", "MATH241"]
     UL_test = ["ECON300 (3)", "ECON315 (3)", "ECON306 (3)", "ECON4990 (3)"]
-    gen_track = [""]
+    gen_track = ["CMSC425", "CMSC320", "CMSC451", "CMSC452", "CMSC456", "CMSC420", "CMSC460"]
 
     s = [["ENGL101", "MATH140", "COMM107", "CMSC131", "CMSC100"],
                 ["CMSC132", "MATH141", "PHYS121", "AASP100"],
@@ -724,6 +725,7 @@ if __name__ == '__main__':
 
     # print(enough_credits(UL_test))
     
+    print(general_track(gen_track))
 
     #print("\n---------\n")
      #returns true
