@@ -47,6 +47,8 @@ def is_math_stat(course):
 def lower_level_math(courses):
     courses_new = copy.deepcopy(courses)
     courses_new = list(map(lambda x: x.split(" ")[0], courses_new))
+    stat_taken = False
+    math_stat_taken = False
     if("MATH140" in courses_new):
         courses_new.remove("MATH140")
         if("MATH141" in courses_new):
@@ -58,7 +60,11 @@ def lower_level_math(courses):
                 if(is_stat_4XX(c)):
                     # ALL STAT 4XX = 3 credits
                     courses_new.remove(c)
+                    stat_taken = True
                     break
+            
+            if(stat_taken is False):
+                return False, "You don't meet the lower level math requirement! You need to take a STAT4XX class."
             
             for c in courses_new:
                 #cursor.execute("SELECT credits FROM courses WHERE course_id=%s", (c,))
@@ -69,14 +75,22 @@ def lower_level_math(courses):
 
                     # if(requires_140(c) == True):
                     courses_new.remove(c)
+                    math_stat_taken = True
                     break
+            
+            if(math_stat_taken is False):
+                return False, "You don't meet the lower level math requirement! You need to take a MATH or STAT class with a prereq of MATH141 (ex: MATH240)"
             
             if( (course_size - len(courses_new) == 2) is True):
                 return True, ""
             else:
-                return False, "False"
-    
-    return False, "False"
+                return False, "You don't meet the lower level math requirement!"
+
+
+        else:
+            return False, "You don't meet the lower level math requirement! You need to take MATH141"
+    else:
+        return False, "You don't meet the lower level math requirement! You need to take MATH140."
 
 
 def lower_level_cs(courses):
@@ -88,8 +102,13 @@ def lower_level_cs(courses):
     if("CMSC131" in courses_new or "CMSC133" in courses_new):
         if(set(lower_level_reqs) <= set(courses_new)):
             return True, ""
+    else:
+        missing_courses = "You don't meet the lower level CS requirements! You are missing the following courses: "
+        for c in courses:
+            if(c in lower_level_reqs is False):
+                missing_courses += (str(c) + ", ")
     
-    return False, "False"
+    return False, missing_courses[:-2]
 
 
 def UL_concentration(courses, cursor):
@@ -103,7 +122,7 @@ def UL_concentration(courses, cursor):
         if(meets_UL(courses, subj, cursor)):
             return True, ""
     
-    return False, "False"
+    return False, "You don't meet the Upper Level Concentration requirement!"
 
 
 def meets_UL(courses, dept, cursor):
@@ -172,9 +191,10 @@ def general_track(courses):
         if(i == 0):
             zero_count += 1
     
-    if(zero_count > 2):
-        return False, "False"
-    
+    if(zero_count > 2 and sum(index_list) >= 5):
+        return False, "You don't meet the CMSC general track requirements! The Upper Level CS courses on your schedule don't span across 3 areas."
+    elif(zero_count > 2 and sum(index_list) < 5):
+        return False, "You don't meet the CMSC general track requirements! You need more Upper Level CS courses"
     misc_count = 0
     for c in courses_new:
         if(c in total_general_courses or (c in misc)):
@@ -183,7 +203,7 @@ def general_track(courses):
     if(misc_count >= 2):
         return True, ""
     
-    return False, "False"
+    return False, "You don't meet the CMSC general track requirements! You are missing the 2 required electives."
 
 def b_search(course_dict_list, low, high, c):
     if high >= low:
@@ -225,24 +245,29 @@ def fulfills_FS(courses, cursor):
         
 
         if(gen_ed == ["FSAW"]):
-            fsaw = True, ""
+            fsaw = True
         elif(gen_ed == ["FSPW"]):
-            fspw = True, ""
+            fspw = True
         elif(gen_ed == ["FSOC"]):
-            fsoc = True, ""
+            fsoc = True
         elif(gen_ed == ["FSAR", "FSMA"]):
-            fsar = True, ""
-            fsma = True, ""
+            fsar = True
+            fsma = True
         elif(gen_ed == ["FSAR"]):
-            fsar = True, ""
+            fsar = True
         elif(gen_ed == ["FSMA"]):
-            fsma = True, ""
+            fsma = True
 
 
-    if((fsaw[0] and fspw[0] and fsoc[0] and fsar[0] and fsma[0]) is True):
+    if((fsaw and fspw and fsoc and fsar and fsma) is True):
         return True, ""
     else:
-        return False, "False"
+        missing_reqs = ""
+        fs_lst = [fsaw, fspw, fsoc, fsar, fsma]
+        for requirement in fs_lst:
+            if(requirement is False):
+                missing_reqs += (requirement + ", ")
+        return False, "You don't meet the GenEd fundamental studies requirement. Missing (" + missing_reqs[:-2] + ")"
 
 def fulfills_DS(given_courses, cursor):
     dsnl_count = 0
@@ -599,7 +624,12 @@ def fulfills_DS(given_courses, cursor):
     if( (dsnl and dsns and dshu and dshs and dssp) is True):
         return True, ""
     else:
-        return False, "False"
+        missing_reqs = ""
+        ds_lst = [dsnl, dsns, dshu, dshs, dssp]
+        for requirement in ds_lst:
+            if(requirement is False):
+                missing_reqs += (requirement + ", ")
+        return False, "You don't meet the GenEd distributive studies requirement! Missing (" + missing_reqs[:-2] + ")"
 
 def fulfills_iseries(given_courses, cursor):
     i_series_count = 0
@@ -624,14 +654,17 @@ def fulfills_iseries(given_courses, cursor):
     if( (i_series_count >= 6) is True):
         return True, ""
     else:
-        return False, "False"
+        missing_credits = 6 - i_series_count
+        return False, "You don't meet GenEd the i-series requirement! You need " + \
+                       str(missing_credits) + \
+                       " more i-series credits"
 
 def fulfills_diversity(given_courses, cursor):
     dvup_count = 0
     dvcc_count = 0
 
     for c in given_courses:
-        course_data = cursor.execute("SELECT gened FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        course_data = cursor.execute("SELECT GenEd FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
         if(course_data):
             gen_ed = course_data[0]
         else: 
@@ -647,8 +680,12 @@ def fulfills_diversity(given_courses, cursor):
     
     if( (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)):
         return True, ""
+    elif(dvup_count + dvcc_count >= 4):
+        return False, "You don't meet the GenEd diversity requirement! 3 of the credits used for the diversity requirement must have gened code (DVUP)"
     else:
-        return False, "False"
+        missing_credits = 6 - (dvup_count + dvcc_count)
+        return False, "You don't meet the GenEd diversity requirement! You need " + \
+                      str(missing_credits) + " more to fulfill the requirement"
 
 def fulfills_gen_ed(courses, cursor):
     print(f"fulfills_FS: {fulfills_FS(courses, cursor)[0]}")
@@ -656,10 +693,21 @@ def fulfills_gen_ed(courses, cursor):
     print(f"fulfills_iseries: {fulfills_iseries(courses, cursor)[0]}")
     print(f"fulfills_diversity: {fulfills_diversity(courses, cursor)[0]}")
 
-    if( (fulfills_FS(courses, cursor)[0] and fulfills_DS(courses, cursor)[0] and fulfills_iseries(courses, cursor)[0] and fulfills_diversity(courses, cursor)[0])):
+    fs_lst = fulfills_FS(courses, cursor)
+    ds_lst = fulfills_DS(courses, cursor)
+    i_series_lst = fulfills_iseries(courses, cursor)
+    diversity_lst = fulfills_diversity(courses, cursor)
+    if((fulfills_FS(courses, cursor)[0] and fulfills_DS(courses, cursor)[0] \
+        and fulfills_iseries(courses, cursor)[0] \
+        and fulfills_diversity(courses, cursor)[0])):
+
         return True, ""
     else:
-        return False, "False"
+        missing_reqs = fs_lst[1] + "\n" + \
+                       ds_lst[1] + "\n" + \
+                       i_series_lst[1] + "\n" + \
+                       diversity_lst[1]
+        return False, missing_reqs
         
 
 def enough_credits(courses, cursor):
@@ -677,7 +725,8 @@ def enough_credits(courses, cursor):
     if(credit_sum >= 120):
         return True, ""
     else:
-        return False, "False"
+        missing_credits = 120 - credit_sum
+        return False, "You don't have enough credits! You are " + str(missing_credits) + " short of the 120 credit mark."
 
 def valid_schedule(c, cursor):
     
