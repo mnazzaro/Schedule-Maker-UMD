@@ -70,7 +70,10 @@ def lower_level_math(courses):
                     courses_new.remove(c)
                     break
             
-            return (course_size - len(courses_new) == 2)
+            if( (course_size - len(courses_new) == 2) is True):
+                return True, ""
+            else:
+                return False, "False"
     
     return False, "False"
 
@@ -192,7 +195,11 @@ def b_search(course_dict_list, low, high, c):
         return -1
 
 def fulfills_FS(courses):
-    fsaw, fspw, fsoc, fsma, fsar = False, False, False, False, False
+    fsaw, fspw, fsoc, fsma, fsar = (False, ""), \
+                                   (False, ""), \
+                                   (False, ""), \
+                                   (False, ""), \
+                                   (False, "")
 
     with open("202008.json") as file:
         courses_json = json.load(file)
@@ -221,7 +228,7 @@ def fulfills_FS(courses):
             fsma = True, ""
 
 
-    if((fsaw and fspw and fsoc and fsar and fsma) is True):
+    if((fsaw[0] and fspw[0] and fsoc[0] and fsar[0] and fsma[0]) is True):
         return True, ""
     else:
         return False, "False"
@@ -662,14 +669,20 @@ def enough_credits(courses):
         return False, "False"
 
 def valid_schedule(c):
-    courses = [item for sublist in c for item in sublist]
+    if(isinstance(c[0], list)):
+        # Flatten
+        courses = [item for sublist in c for item in sublist]
+    else:
+        # Don't flatten
+        courses = c
+
     ret_val = {
-        "enough_credits": (enough_credits(courses)[1], 0),
-        "lower_level_math": (lower_level_math(courses)[1], 0),
-        "lower_level_cs": (lower_level_cs(courses)[1], 0),
-        "upper_level": (UL_concentration(courses)[1], 0),
-        "general_track": (general_track(courses)[1], 0),
-        "gened": (fulfills_gen_ed(courses)[1], 0)
+        "enough_credits": enough_credits(courses)[1],
+        "lower_level_math": lower_level_math(courses)[1],
+        "lower_level_cs": lower_level_cs(courses)[1],
+        "upper_level": UL_concentration(courses)[1],
+        "general_track": general_track(courses)[1],
+        "gened": fulfills_gen_ed(courses)[1]
     }
     return ret_val
     
@@ -698,10 +711,11 @@ if __name__ == '__main__':
     # print(general_track(gen_track))
     #print(fulfills_diversity(diversity_test))
     
-    print(valid_schedule(UL_test))
+    print(valid_schedule(s))
 
-    schedule = [item for sublist in s for item in sublist]
-    print(enough_credits(UL_test))
+    #schedule = [item for sublist in s for item in sublist]
+
+    # print(enough_credits(UL_test))
     
 
     #print("\n---------\n")
@@ -713,7 +727,7 @@ if __name__ == '__main__':
     #print("UL: " + str(UL_concentration(UL_test)))
     # print("gentrack: " + str(general_track(schedule)))
 
-    # print(fulfills_FS(schedule))
+    #print(fulfills_FS(schedule))
 
     # print(fulfills_DS(schedule))
     # print(fulfills_iseries(schedule))
