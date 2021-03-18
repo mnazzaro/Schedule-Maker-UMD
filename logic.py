@@ -184,7 +184,7 @@ def general_track(courses):
     
     print (f"INDEX LIST: {index_list}")
     if(sum(index_list) < 5):
-        return False, "False"
+        return False, "You don't meet the CMSC general track requirements! You need more Upper Level CS courses"
     
     zero_count = 0
     for i in index_list:
@@ -192,9 +192,7 @@ def general_track(courses):
             zero_count += 1
     
     if(zero_count > 2 and sum(index_list) >= 5):
-        return False, "You don't meet the CMSC general track requirements! The Upper Level CS courses on your schedule don't span across 3 areas."
-    elif(zero_count > 2 and sum(index_list) < 5):
-        return False, "You don't meet the CMSC general track requirements! You need more Upper Level CS courses"
+        return False, "You don't meet the CMSC general track requirements! The Upper Level CS courses on your schedule don't span across 3 areas." 
     misc_count = 0
     for c in courses_new:
         if(c in total_general_courses or (c in misc)):
