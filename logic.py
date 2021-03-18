@@ -121,11 +121,12 @@ def meets_UL(courses, dept, cursor):
                 num_credits = num_credits[0]
             else:
                 num_credits = 0
-            UL_credits += num_credits    
+            UL_credits += num_credits  
+    print (f"UPPERLEVEL_CREDITS: {UL_credits}") 
     if(UL_credits >= 12):
-        return True, ""
+        return True
     else:
-        return False, "False"
+        return False
 
 
 def general_track(courses):
@@ -144,7 +145,7 @@ def general_track(courses):
     print (f"COURSES: {courses_new}")
     index_list = [0, 0, 0, 0, 0]
     for i in range(len(courses_new)-1, -1, -1):
-        c = courses[i]
+        c = courses_new[i]
         if(c in total_general_courses):
             if(c in systems):
                 courses_new.remove(c)
