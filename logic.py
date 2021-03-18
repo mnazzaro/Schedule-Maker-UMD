@@ -262,9 +262,10 @@ def fulfills_FS(courses, cursor):
     else:
         missing_reqs = ""
         fs_lst = [fsaw, fspw, fsoc, fsar, fsma]
-        for requirement in fs_lst:
-            if(requirement is False):
-                missing_reqs += (requirement + ", ")
+        fs_str_lst = ["FSAW", "FSPW", "FSOC", "FSAR", "FSMA"]
+        for i in range(len(fs_lst)):
+            if(fs_lst[i] is False):
+                missing_reqs += (fs_str_lst[i] + ", ")
         return False, "You don't meet the GenEd fundamental studies requirement. Missing (" + missing_reqs[:-2] + ")"
 
 def fulfills_DS(given_courses, cursor):
@@ -624,9 +625,10 @@ def fulfills_DS(given_courses, cursor):
     else:
         missing_reqs = ""
         ds_lst = [dsnl, dsns, dshu, dshs, dssp]
-        for requirement in ds_lst:
-            if(requirement is False):
-                missing_reqs += (requirement + ", ")
+        ds_str_lst = ["DSNL", "DSNS", "DSHU", "DSHS", "DSSP"]
+        for i in range(len(ds_lst)):
+            if(ds_lst[i] is False):
+                missing_reqs += (ds_str_lst[i] + ", ")
         return False, "You don't meet the GenEd distributive studies requirement! Missing (" + missing_reqs[:-2] + ")"
 
 def fulfills_iseries(given_courses, cursor):
