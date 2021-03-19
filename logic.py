@@ -655,7 +655,7 @@ def fulfills_iseries(given_courses, cursor):
         return True, ""
     else:
         missing_credits = 6 - i_series_count
-        return False, "You don't meet GenEd the i-series requirement! You need " + \
+        return False, "You don't meet the GenEd i-series requirement! You need " + \
                        str(missing_credits) + \
                        " more i-series credits"
 
