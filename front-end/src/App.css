@@ -84,9 +84,9 @@ input {
     height: 20px;
 }
 
-.enough-credits {background-color: grey;}
-.lower-level-math {background-color: purple;}
-.lower-level-cs {background-color:aqua;}
-.upper-level {background-color: pink;}
-.general-track {background-color: royalblue;}
-.gened {background-color: brown;}
+.enough-credits {color: grey;}
+.lower-level-math {color: purple;}
+.lower-level-cs {color:green;}
+.upper-level {color: red;}
+.general-track {color: royalblue;}
+.gened {color: brown;}

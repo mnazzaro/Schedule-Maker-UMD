@@ -54,8 +54,8 @@ def lower_level_math(courses):
         if("MATH141" in courses_new):
             courses_new.remove("MATH141")
             course_size = len(courses_new)
-            if(course_size < 2):
-                return False
+            # if(course_size < 2):
+            #     return False, "You need to take a STAT4XX class and another MATH/STAT course"
             for c in courses_new:
                 if(is_stat_4XX(c)):
                     # ALL STAT 4XX = 3 credits
@@ -226,11 +226,11 @@ def b_search(course_dict_list, low, high, c):
         return -1
 
 def fulfills_FS(courses, cursor):
-    fsaw, fspw, fsoc, fsma, fsar = (False, ""), \
-                                   (False, ""), \
-                                   (False, ""), \
-                                   (False, ""), \
-                                   (False, "")
+    fsaw, fspw, fsoc, fsma, fsar = False, \
+                                   False, \
+                                   False, \
+                                   False, \
+                                   False
     
     for c in courses:
         #print(b_search(courses_json, 0, len(courses_json), c)[0])
@@ -264,6 +264,7 @@ def fulfills_FS(courses, cursor):
         fs_lst = [fsaw, fspw, fsoc, fsar, fsma]
         fs_str_lst = ["FSAW", "FSPW", "FSOC", "FSAR", "FSMA"]
         for i in range(len(fs_lst)):
+            print(fs_str_lst[i] + ": " + str(fs_lst[i]))
             if(fs_lst[i] is False):
                 missing_reqs += (fs_str_lst[i] + ", ")
         return False, "You don't meet the GenEd fundamental studies requirement. Missing (" + missing_reqs[:-2] + ")"
