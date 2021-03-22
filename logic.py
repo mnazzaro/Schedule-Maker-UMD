@@ -300,17 +300,23 @@ def fulfills_DS(given_courses, cursor):
         if(len(gen_ed) == 0):
             continue
 
+        num_credits = cursor.execute("SELECT credits FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if num_credits:
+            num_credits = num_credits[0]
+        else:
+            num_credits = 0
+
         #DSNL
         if(gen_ed == ["DSNL"]):
-            dsnl_count += int(course_data[1])
+            dsnl_count += int(num_credits)
 
         elif(gen_ed == ["DSNL", "SCIS"]):
-            dsnl_count += int(course_data[1])
-            # i_series_count += int(course_data[1])
+            dsnl_count += int(num_credits)
+            # i_series_count += int(num_credits)
 
         elif(gen_ed == ["DSNL", "DVUP"]):
-            dsnl_count += int(course_data[1])
-            # dvup_count += int(course_data[1])
+            dsnl_count += int(num_credits)
+            # dvup_count += int(num_credits)
 
         elif(len(gen_ed) > 0 and "DSNL(fkwh" in gen_ed[0]):
             coreq = gen_ed[0][ 9:gen_ed[0].index(")") ]
@@ -322,50 +328,50 @@ def fulfills_DS(given_courses, cursor):
                     break
             
             if(coreq_taken):
-                # print(course_data[1])
-                dsnl_count += (int(course_data[1]) + 1)
+                # print(num_credits)
+                dsnl_count += (int(num_credits) + 1)
                 dsnl = True
             elif("DSNS" in gen_ed[0]):
                 dsns = True
         
         # if(len(gen_ed) == 2 and gen_ed[1] == "SCIS"):
-        #     i_series_count += int(course_data[1])
+        #     i_series_count += int(num_credits)
         # elif(len(gen_ed) == 2 and gen_ed[1] == "DVUP"):
-        #     dvup_count += int(course_data[1])
+        #     dvup_count += int(num_credits)
         # elif(len(gen_ed) == 3 and gen_ed[1] == "DVUP" and gen_ed[2] == "SCIS"):
-        #     dvup_count += int(course_data[1])
-        #     i_series_count += int(course_data[1])
+        #     dvup_count += int(num_credits)
+        #     i_series_count += int(num_credits)
 
         # DSNS
         if(gen_ed[0] == "DSNS"):
             dsns = True
         elif(gen_ed[0] == "DSHSDSNS"):
             if(dsns == True):
-                dshs_count += int(course_data[1])
+                dshs_count += int(num_credits)
             else:
-                dshs_dsns_count += int(course_data[1])
+                dshs_dsns_count += int(num_credits)
         elif(gen_ed[0] == "DSNSDSSP"):
             if(dsns == True):
-                dssp_count += int(course_data[1])
+                dssp_count += int(num_credits)
             else:
-                dsns_dssp_count += int(course_data[1])
+                dsns_dssp_count += int(num_credits)
         
         # DSHS
         if(gen_ed[0] == "DSHS"):
-            dshs_count += int(course_data[1])
+            dshs_count += int(num_credits)
         elif(gen_ed[0] == "DSHSDSHU"):
-            dshs_dshu_count += int(course_data[1])
+            dshs_dshu_count += int(num_credits)
         elif(gen_ed[0] == "DSHSDSSP"):
-            dshs_dssp_count += int(course_data[1])
+            dshs_dssp_count += int(num_credits)
         
         # DSHU
         elif(gen_ed[0] == "DSHU"):
-            dshu_count += int(course_data[1])
+            dshu_count += int(num_credits)
         elif(gen_ed[0] == "DSHUDSSP"):
-            dshu_dssp_count += int(course_data[1])
+            dshu_dssp_count += int(num_credits)
         # DSSP
         elif(gen_ed[0] == "DSSP"):
-            dssp_count += int(course_data[1])
+            dssp_count += int(num_credits)
 
     
     if(dsnl_count >= 4):
@@ -645,12 +651,18 @@ def fulfills_iseries(given_courses, cursor):
         if(len(gen_ed) == 0):
             continue
 
+        num_credits = cursor.execute("SELECT credits FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if num_credits:
+            num_credits = num_credits[0]
+        else:
+            num_credits = 0
+
         if(gen_ed == ["SCIS"]):
-            i_series_count += int(course_data[1])
+            i_series_count += int(num_credits)
         elif(len(gen_ed) >= 2 and gen_ed[1] == "SCIS"):
-            i_series_count += int(course_data[1])
+            i_series_count += int(num_credits)
         elif(len(gen_ed) >= 3 and gen_ed[2] == "SCIS"):
-            i_series_count += int(course_data[1])
+            i_series_count += int(num_credits)
     
     if( (i_series_count >= 6) is True):
         return True, ""
@@ -673,11 +685,17 @@ def fulfills_diversity(given_courses, cursor):
 
         if(len(gen_ed) == 0):
             continue
+
+        num_credits = cursor.execute("SELECT credits FROM courses WHERE course_id=?", c.split(" ")[0]).fetchone()
+        if num_credits:
+            num_credits = num_credits[0]
+        else:
+            num_credits = 0
         
         if("DVUP" in gen_ed):
-            dvup_count += int(course_data[1])
+            dvup_count += int(num_credits)
         if("DVCC" in gen_ed):
-            dvcc_count += int(course_data[1])
+            dvcc_count += int(num_credits)
     
     if( (dvup_count >= 3 and (dvup_count + dvcc_count) >= 4)):
         return True, ""
