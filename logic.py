@@ -99,9 +99,9 @@ def lower_level_cs(courses):
 
     courses_new = copy.deepcopy(courses)
     courses_new = list(map(lambda x: x.split(" ")[0], courses_new))
-    if("CMSC131" in courses_new or "CMSC133" in courses_new):
-        if(set(lower_level_reqs) <= set(courses_new)):
-            return True, ""
+    if(("CMSC131" in courses_new or "CMSC133" in courses_new) and \
+        (set(lower_level_reqs) <= set(courses_new))):
+        return True, ""
     else:
         missing_courses = "You don't meet the lower level CS requirements! You are missing the following courses: "
         for c in courses:
