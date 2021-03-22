@@ -108,7 +108,7 @@ def lower_level_cs(courses):
             if(c in lower_level_reqs is False):
                 missing_courses += (str(c) + ", ")
     
-    return False, missing_courses[:-2]
+        return False, missing_courses[:-2]
 
 
 def UL_concentration(courses, cursor):
